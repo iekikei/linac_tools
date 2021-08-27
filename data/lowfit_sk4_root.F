@@ -139,6 +139,7 @@ c***  obtain watert and badch
      $        nnrun, lin_badrun(nnrun), watert
          lastrun = nnrun
       endif
+      watert=13000.0
       
 c*** init. bonsai 
       if (icall.eq.0) then

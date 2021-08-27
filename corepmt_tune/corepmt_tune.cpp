@@ -43,7 +43,8 @@
 #include <TText.h>
 #include <TLine.h>
 
-std::string const LINAC_TXT="/home/sklowe/linac/const/linac_sk5_runsum.dat";
+std::string const LINAC_DIR = std::getenv("LINAC_DIR"); 
+std::string const RUNSUM_TXT = LINAC_DIR + "/runsum.dat";
 
 void read_me(int flag,int run,double *x, double *y){
   double a=0.,b=0.,c=0.,d=0.,e=0.,f=0.,g=0.,h=0.,i=0.;
@@ -91,9 +92,9 @@ int main(int argc,char *argv[]){
   int EMode = atoi(argv[1]);
 
   std::ifstream IN;
-  IN.open(LINAC_TXT.c_str());
+  IN.open(RUNSUM_TXT.c_str());
   if(!IN){
-    std::cout<<LINAC_TXT<<" does not exist."<<std::endl;
+    std::cout<<RUNSUM_TXT<<" does not exist."<<std::endl;
     return 1;
   }
 

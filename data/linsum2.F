@@ -18,7 +18,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       integer badrun,run_num
       integer i
 
-      call get_environment_variable('RUNSUM_DIR', linac_dir)
+      call get_environment_variable('LINAC_DIR', linac_dir)
       runsum = "/runsum.dat"
       fname = trim(linac_dir) // trim(runsum)
       runsum = "/ge_runsum.dat"

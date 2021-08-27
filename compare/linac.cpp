@@ -42,7 +42,8 @@
 #include "TChain.h"
 #include <TGaxis.h>
 
-std::string const LINAC_TXT = "/home/sklowe/linac/const/linac_sk4_runsum.dat";
+std::string const LINAC_DIR = std::getenv("LINAC_DIR"); 
+std::string const RUNSUM_TXT = LINAC_DIR + "/runsum.dat";
 
 void fit_me(TH1D *plot,float *x,float *y,float *z,int nnrun,int fflag){  
   float f_mean = 0.0;
@@ -248,9 +249,9 @@ int main(int argc,char *argv[]){
   char str[256];
   
   std::ifstream IN;
-  IN.open(LINAC_TXT.c_str());
+  IN.open(RUNSUM_TXT.c_str());
   if(!IN){
-    std::cout<<LINAC_TXT<<" does not exist."<<std::endl;
+    std::cout<<RUNSUM_TXT<<" does not exist."<<std::endl;
     return 1;
   }
 	
