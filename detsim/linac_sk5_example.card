@@ -1,0 +1,460 @@
+C===========================================================================
+C===========================================================================
+C  Input card for Super-Kamiokande Monte Carlo simulation
+C===========================================================================
+C===========================================================================
+
+C===========================================================================
+C     Input card for skdetsim fundamental control parameters(ref:cntlcard.F)
+C===========================================================================
+C
+C     SKCNTL-FILEFORMAT          Output file format
+C                          = 0 ZBS (defalut)
+C                          = 1 root
+C
+C     SKCNTL-SKGEOMETRY          Control geometry definition used
+C     (INTEGER*4)          = 1 SUPER-KAMIOKANDE I
+C                          = 2 SUPER-KAMIOKANDE II
+C                          = 3 SUPER-KAMIOKANDE III
+C                          = 4 SUPER-KAMIOKANDE IV
+C     SKCNTL-TRACKPHOTON         Control tracking photons.
+C                       WATERTUNE/REFLECTIONTUNE not set, contol them, too.
+C     (INTEGER*4)          = -1 Not track photons at all 
+C                          =  1 Track all photons (old LE tuning) 
+C                          =  2 Apply Q.E. and only (old ATMPD tuning)
+C                             accepted photons are tracked
+C                          =  3 Apply QE/ABS and only accepted photons
+C                             are tracked (Unified tuning)
+C     SKCNTL-DSTUNE              Tuning in DS routines
+C     (INTEGER*4)          = 1  keep all p.e. and single gate(old LE tuning)
+C                          = 2  throw away p.e. out of a gate
+C                               and single gate(old ATMPD tuning)
+C                          = 3  keep all p.e. and multi-gates
+C                          = 4  throw away p.e. out of gate
+C                               and multi-gates(for very high energy)
+C
+C     SKCNTL-OUTPUTZBS   (LOGICAL)  Save ZBS data
+C     OUTPUT_TYPE        (INTEGER)  ATMPD group needs some additional bank
+C                          = 1 for LE group (NOT add those banks)
+C                          = 2 for ATMPD group (add those banks)
+C     SKCNTL-OUTPUTHBOOK (INTEGER)  Save HBOOK histograms
+C                          = 0 no HBOOK histograms
+C                          = 1 for track segments records
+C                          = 2 for standard TEST histograms
+C     SKCNTL-OUTPUTTEXT  (LOGICAL)  Save TEXT records (not supported yet)
+C     SKCNTL--VALIDATE   (LOGICAL)  Produce output for crosschecks
+C
+C---------------------------------------------------------------------------
+C LEGACY PARAMETERS : Not set,
+C   the following parameters are the same as TRACKPHTON.
+C
+C     SKCNTL-WATERTUNE            Water Coefficients and Parameters tuning
+C     (INTEGER*4)          = 1  old LE group tuning         
+C                          = 2  old ATMPD group tuning 
+C                          = 3  SAME tuning for both group
+C     SKCNTL-REFLECTIONTUNE       PMT and blacksheet tuning.
+C                PMT:QE, reflection and pre- and after-pulse. BS: reflection
+C     (INTEGER*4)          = 1  old LE group tuning     
+C                          = 2  old ATMPD group tuning  
+C                          = 3  SAME tuning for both group
+C---------------------------------------------------------------------------
+C Official combination: TRACK/DS
+C SK 1&2  1/1(LE), 2/2(AP)
+C SK 3    1/1(LE), 2/2(AP), 3/3(UNI:now testing) 
+C SK 4    3/3(UNI), 3/4(UNI: very high energy)
+C---------------------------------------------------------------------------
+
+SKCNTL-FILEFORMAT 1 
+
+SKCNTL-SKGEOMETRY 5
+SKCNTL-TRACKPHOTON 1
+SKCNTL-DSTUNE 3
+SKCNTL-OUTPUTZBS TRUE
+SKCNTL-OUTPUTTYPE 1
+SKCNTL-OUTPUTHBOOK 0
+SKCNTL-OUTPUTTEXT FALSE
+SKCNTL-VALIDATE FALSE
+
+C*** to reduce log data size
+SKCNTL-MESSAGEOFF 1
+
+C===========================================================================
+C  Input card for VECT parameters(ref:sgcard.F)
+C===========================================================================
+C read VECTOR from text file ; VECT-FILE  2
+C read VECTOR from card      ; VECT-FILE  1(Normal)
+C read VECTOR from ZBS file  ; VECT-FILE  0(B8MC, NEUT)
+C read VECTOR from SGGVUS    ; VECT-FILE -1(LINAC,NICKEL)
+C read CONVVECT from file    ; VECT-FILE -2
+VECT-FILE -1
+
+C number of generated event
+C (if VECT-FILE 0, VECT-NEVT>= # of events in ZBS file)
+VECT-NEVT 5000
+CVECT-NEVT 100
+
+C seeds for random number generators; three values must be given
+VECT-RAND  450972 212638 0 0 0
+
+CCCCC following  VECTOR informations used when 'VECT-FILE' is set to 0.
+C VECT-MVTX    Control vertex
+C = 1 fixed on the position specified by 'VECT-VTX'(defalut:0.0,0.0,0.0)
+C = 2 set random position inside 'VECT-WALL'(cm) from pmt plane(defalut:0cm)
+VECT-MVTX 2
+VECT-WALL 0.
+
+
+ 
+C VECT-MDIR    Control directions
+C = 1 fixed direction set by 'VECT-DIR'
+C = 2 randomly generated(default:-1.0,0.0,0.0)
+VECT-MDIR 2
+
+C VECT-PART    input particle ID (e-: 11, mu-: 13,...)
+VECT-PART 11
+
+C VECT-MMOM    Control momentum MeV
+C = 1 fixed momentum set by the 1st argument of 'VECT-MOM'
+C = 2 randomly set between 1st and 2nd argument of 'VECT-MOM'
+C  (default:10. 10000.)
+
+VECT-MMOM 1
+VECT-MOM 10.000000 10.000000
+
+
+C ==========================================
+C Input card for GEANT control(ref:sgffin.F)
+C ==========================================
+
+ccc Turn on listing GEANT control card
+GEANT-LIST
+
+ccc Kinetic energy cuts in TeV. gammas, electrons,....
+GEANT-CUTS 0.0001 2.64064E-04
+
+CCC Controls decay process
+CCC (0: no decay, 1:decay with generation of secondaries(Defalut),..)
+C GEANT-DCAY 1
+
+CCC Controls energy loss process
+CCC (0: no loss, 1: delta ray and reduced Landau fluctuations,
+CCC (2: full Landau fluctuations and no delta rays(Default),...)
+GEANT-LOSS 1
+
+CCC Total time left after initialization,
+CCC Time required for program termination phase,
+CCC Test on time left done every ITIME events
+GEANT-TIME 0. 1. -1
+
+CCC Automatic computation of STMIN,STEMAX,DEEMAX,TMAXFD
+CCC  0 = Tracking media parameters taken from the argument list of GSTMED
+CCC  1 = Tracking media parameters calculated by GEANT(Default)
+GEANT-AUTO 0
+
+CCC Contols Cerenkov photons production
+CCC  0 = no Cerenkov photons production
+CCC  2 = Cerenkov photons production
+GEANT-CKOV 2
+
+GEANT-ABAN 0
+
+GEANT-END
+
+
+C =============================================================
+C Input card for Detector Simulation control(dsinip.F,dscard.F)
+C =============================================================
+ 
+C **** WATER TRANSPARENCY ****
+C Vary the water absorption parameter & coefficient dependiong on WT
+C Still working with SK-I & LE_WATER
+C  read WT (water transparency) from card              ; DS-MWAT   1
+C  read run number for WT from card                    ; DS-MWAT   2
+C  set defalut value (8300cm(SK-I))
+C   or change in dsinip.F/skdetsim.F(only for LINAC)
+C                          (default)                 ; DS-MWAT   0
+C   read WT from zbs file (LOWMC bank : B8mc)        ; DS-MWAT  -1
+C   DS-WATRA   : water transparency (cm)(default:8300)
+C   DS-WATRUN  : run number
+CDS-MWAT -1
+CDS-MWAT 0
+CDS-MWAT 777
+CDS-MWAT 1
+CDS-WATRA 13000.000
+DS-MWAT 2
+DS-WATRUN RUNNUM
+C set period to set water parameters as measured values by laser data
+C added a flag by M. Shiozawa (20090806)
+CDS-YMWAT 200904
+DS-WATERP 201908
+
+C ****************************
+C *** TOP-BOTTOM ASYMMETRY ***
+C Vary the top-bottom asymmetry dependiong as a function on time
+C Working with SK-III & UNI_TUNE
+C  read TBA (top-bottom asym.) from card                ; DS-MTBA   1
+C  read run number for TBA from card                    ; DS-MTBA   2
+C  set defalut value (TBA=0.)
+C   or change in dsinip.F (default)                     ; DS-MTBA   0
+C  read TBA from zbs file in gukine (LOWMC bank : B8mc) ; DS-MTBA  -1
+CDS-MTBA 0
+CDS-MTBA 1
+CDS-TBA -0.025
+
+DS-MTBA 1
+DS-TBA 0
+
+DS-TBARUN RUNNUM 
+CDS-MTBA 1 
+CDS-MTBA -1
+C ****************************
+C apply Sekiya's DT analysis: 200908
+CDS-MTBA 1
+CDS-TBA 12.01
+C ****************************
+
+C *** Determined by T.Yokozawa for LINAC in SK-4 ***
+CDS-WATERP 20100726
+
+C ****************************
+C *** RUN NUMBER FOR GAIN INCREASING SIMULATION ***
+DS-GAINRUN RUNNUM
+C ****************************
+
+
+C The absolute normalization factor for ID PMT QE(COREPMT)(ref:dsinip.F)
+C Not set here, defalut value in dsinip.F is used.
+CDS-NORMQE 0.861858
+
+C before QEtune 
+CDS-NORMQE 0.8765 
+
+C after QEtune 
+CDS-NORMQE 0.8639894
+
+C after QEtune(2021.07.13)
+DS-NORMQE 0.86983996
+
+
+CDSNORMQE
+DS-QETAB 51
+
+C Set 1(AP_DS), if you trace the cherenkov light in ANTI counter
+C LE_/LE_MULTI_DS : usually 0 (default:0)
+CDS-ANTI 1
+DS-ANTI 0
+
+C The flag of trigger simulation, LE_/LE_MULTI_DS,SK-I/II/III
+C SK-1 1, SK-II/III 0(still testing) (default:0)
+DS-TRIGSIM 0
+CDS-TRIGSIM 1
+
+ccccccccccccccccccccccccccccccccccccccccccccccc
+C Use PMT-by-PMT dark rate
+C The values in DS-DARK should be ignored
+DS-DOPMTDARKRT 1
+DS-PMTNOISEFILE PMTDARKFILE
+ccccccccccccccccccccccccccccccccccccccccccccccc
+
+C dark noise rate (default 3 kHz)
+C  (for keep p.e. mode,(LE_DS,LE_MULTI_DS)
+C  For normal, DT, Nickel...,
+C     Please use 4.91 for SK-I (all time),
+C            multiply 1.201 (for SK-II) to your favorite value
+C            multiply 1.286 (for SK-III) to your favorite value
+C             (for taking into account the ATM threshold effect.)
+C  For LINAC, if SK-I, 4.91,  else  -1.0
+C
+C  (for AP_DS) 4.2 kHz?
+C
+CDS-DARK 4.91
+CDS-DARK -1.0
+ccccccccccccccccccccccccccccccccccccccccccccc
+C 4.71: SK-II average form /skam/const/runsum 
+C 4.71 * 1.201 = 5.66
+CDS-DARK 5.66
+ccccccccccccccccccccccccccccccccccccccccccccc
+cc Run33730  4.40880*1.286=5.566972
+CCCCDS-DARK 5.566972
+CDS-DARK 5.66972
+ccccccccccccccccccccccccccccccccccccccccccccc
+cc Linac should always be -1.0
+DS-DARK -1.0
+ccccccccccccccccccccccccccccccccccccccccccccc
+c apply Sekiya's DT analysis: 200908
+
+ccccccccccccccccccccccccccccccccccccccccccccc
+
+
+
+C discriminator threshold (default 0.2 p.e.) (LE_DS,LE_MULTI_DS)
+CMSDS-DISTHR 0.2
+DS-DISTHR 0.32
+ 
+C trigger threshold in unit of number of hit PMTs, work when TRIGSIM 1
+C  (default 30 hit)(LE_/LE_MULTI_DS,SK-I/II/III), SK-I official 15
+DS-TRGTHR 15.
+CDS-TRGTHR 0.
+ 
+C If the energy of the particles is high,
+C the gate width for MCRAWTQ is GEGATE. (AP, for SK-I,II,III)
+C (default:300)
+DS-GEGATE 300.
+
+C ATM veto for reject reflection (default from 300 to 900 nsec)
+C for ATM, for QBEE?
+DS-ATMVET 400. 900.
+ 
+C the timing of global trigger (default 800 nsec)
+DS-GLTTIM 800.
+
+Cthe default place of geant T0(default: LE_DS 540; LE_MULTI_DS 840; AP_DS 960) 
+CDSOFFSET
+CDS-OFFSET 540.
+CDS-OFFSET 840.
+CDS-OFFSET 960.
+
+CCCC for LE_MULTI_DS/SK1-3
+CCC  T(real) = T(geant) + OFFSET + TRGOFF - TRGDS
+CCC  Gate range : GMIN ~ GMAX
+CCC  GMAX(real) = OFFSET + TRGOFF + GLTTIM (default:1900ns)
+CCC  GMIN(real) = GMAX - GATEDS(1300ns) (default:600ns)
+
+C geant trigger timing in no trigger simulation case(LE_MULTI_DS/SK1-3)
+C (default:260.)
+CDSTRGDS
+CDS-TRGDS 260.
+ 
+C difference of trigger timing and t0(LE_MULTI_DS/SK1-3)
+C (default:260.)
+CDSTRGOFF
+CDS-TRGOFF 260.
+
+CCCC for OD
+C FULL width of TDC of ANTI detector(ns)(default:7000.)
+DS-FULWIDA 16000.
+ 
+C T0 of ANTI detector(ns)(default:4000.)
+DS-DSANTT0 8990.
+ 
+C DARK RATE for ANTI(KHz)(default:5.0)
+DS-DARKDSA 4.0
+ 
+C Quality of ANTI detector (1:Quick(default) / 2:Detail)
+DS-IAGEQAL 2
+ 
+c Tyvek model (fraction Lambert)(default:0)
+DS-DSTYVKM 1.0
+
+C Reflection rate of Tyvek (default:0.68,0.92,0.9)
+CDS-DSTYVKRTOP 0.620
+CDS-DSTYVKRBOT 0.873
+CDS-DSTYVKRWAL 0.857
+C SK-2/3
+DS-DSTYVKRTOP 0.93
+DS-DSTYVKRBOT 0.99
+DS-DSTYVKRWAL 0.93
+C SK-1
+CDS-DSTYVKRTOP 0.71
+CDS-DSTYVKRBOT 0.83
+CDS-DSTYVKRWAL 0.80
+
+C Relative ratio of segmentation Tyvek reflection (default:1.,1.)
+C SK-3
+DS-DSSEGRTOP 1.
+DS-DSSEGRBOT 0.7
+C SK-1/2 (default)
+ 
+C Transmission rate for Tyvek (default:0.,0.)
+C SK-3
+DS-PROBTT 0.02
+DS-PROBTB 0.08
+C SK-1/2 (default)
+
+C Anti detector PMT's collection efficiency (default:0.22)
+C SK-2/3
+DS-APMTCOR 0.13
+C SK-1
+CDS-APMTCOR 0.27
+ 
+c Old/new efficiency ratio (default:1.)
+DS-APMTEFR 0.87
+
+c Top/bottom/side efficiency rato (default:1.,1.,1.)
+C SK-3
+DS-APMTEFT 1.0
+DS-APMTEFB 0.8
+DS-APMTEFW 1.0
+C SK-2
+CDS-APMTEFT 1.0
+CDS-APMTEFB 0.7
+CDS-APMTEFW 1.0
+C SK-1
+CDS-APMTEFT 0.95
+CDS-APMTEFB 0.95
+CDS-APMTEFW 0.83
+
+C Anti detector Wave length shifter's collection efficiency (default:0.007)
+DS-AWLSCOR 0.0065
+ 
+C Anti detector discriminator threshold (p.e.) (default:0.25)
+C SK-2/3
+DS-ADSCTHR 0.42
+C SK-1
+CDS-ADSCTHR 0.22
+ 
+C Anti detector saturation parameters
+C (default:1.,0.002,0.0003,1.,0.0007,0.0003)
+C SK-2/3
+DS-ADSAPO 1. 0.002 0.0003
+DS-ADSAPN 1. 0.0007 0.0003
+C SK-1
+CDS-ADSAPO 1. 0.004 0.0003
+CDS-ADSAPN 1. 0.0007 0.0003
+
+C Ratio of old and new tube thresholds (default:0.01)
+DS-ADSTHRF 0.01
+ 
+C - Spe response parameters for old od-tubes
+C   (gaussian+plateau)(default:0.6,0.9)
+C SK-2/3
+DS-GAINPLATEAU 0.6
+DS-GAINFACT 0.9
+C SK-1
+CDS-GAINPLATEAU 0.001
+CDS-GAINFACT 0.49
+
+C Only the 1.3 microsec time window into the TQREAL bank,
+C to reduce the output file size.
+C If 1, 1.3micro. (default:0 for 40micro sec)
+DS-SHORTWIN 1
+CDS-SHORTWIN 0
+ 
+C bank writing control
+C (e.g. WRTBANK   TRUE FALSE TRUE .... )(default:TRUE)
+C           MCPHOTON MCRAWTQ MCRAWTQA  MCTQ    TQ    TQA   TQREAL  TQAREAL TQZ
+C
+DS-WRTBANK   FALSE   FALSE   FALSE     FALSE   FALSE  FALSE  TRUE  FALSE  FALSE
+
+C Flash ADC Bank Control (if FADC is defined, meaningful)
+DS-WRTFADCBNK FALSE
+
+C========================================================================
+C     Input card for ap-specific control (ref. : aprdcd.F)
+C========================================================================
+
+C HADR=  1:FLUKA, 2:GHEISHA, 3:GCALOR(default)
+AP-HADR 3
+
+C PION= 1:if P(pion)(MeV)>PITHR(default:500), traced by ORIG.
+C Otherwise by GEANT.(default); otherwise: only by GEANT
+CAP-PION 1
+CAP-PITHR 500
+
+C skip ISKIP Events before generating events
+CAP-ISKIP
+
+C     AP-SEGF      : output filename of the HBOOK file for track 
+C                    segments records.
+C                    It is used when SKCNTL-OUTPUTHBOOK = 1.
+AP-SEGF 'seg.hbook'
