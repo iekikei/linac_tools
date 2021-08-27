@@ -1,10 +1,20 @@
 #!/usr/bin/perl 
 
+# Settings
+$run_min = 86119;
+$run_max = 86161;
+$data_dir = '/disk02/data7/sk5/lin';
+$analysis_dir = "$ENV{LINAC_DIR}/data";
+$skofl_env = '/usr/local/sklib_gcc4.8.5/skofl-trunk/env.csh';
+$seed1 = 45097;
+$seed2 = 21263;
+$version = "";
+$out_dir = "$ENV{LINAC_DIR}/detsim/out$version";
+
+# Make output directories if they do not exist
 if(!-d "./card") {
     mkdir "./card";
 }
-
-$version = "tune";
 
 if(!-d "./script") {
     mkdir "./script";
@@ -18,44 +28,55 @@ if(!-d "./err") {
     mkdir "./err";
 }
 
-if(!-d "/disk02/lowe8/mharada/linac/sk5/detsim/out_root_$version/") {
-    mkdir "/disk02/lowe8/mharada/linac/sk5/detsim/out_root_$version/";
+if(!-d $out_dir) {
+    mkdir $out_dir;
 }
 
+# Template card file
 open (CARDEXAMPLE,"linac_sk5_example.card");
 @card_data =<CARDEXAMPLE>;
 close CARDEXAMPLE;
 
-open (INP,"/home/sklowe/linac/const/linac_sk5_runsum.dat");
-@raw_data =<INP>;
+# Runsum data
+open (INP,"$ENV{LINAC_DIR}/runsum.dat");
+@runsum =<INP>;
 close INP;
 
-$seed1 = 45097;
-$seed2 = 21263;
+# Loop for lines in run summary data
+foreach $line (@runsum){
 
-foreach $list (@raw_data){
-  chomp($list);
-  ($RunNumber,$mom,$mod,$x,$y,$z,$badrun)=split(/ /,$list);
+  # Get settings for this run
+  chomp($line);
+  ($RunNumber,$mom,$mod,$x,$y,$z,$badrun)=split(/ /,$line);
 
-  if ($RunNumber>=80000 && $mod==0 && $RunNumber<85000){
-    print " leggo $RunNumber $mom $x $y $z \n";
-    $darkfile = "'/home/mharada/Lowe/darkr_for_skdetsim/output/darkr.0$badrun.txt'";
+  # Select runs of interest
+  if ($mod==0 && $RunNumber>=$run_min && $RunNumber<=$run_max){
 
+    print "$RunNumber $mom $x $y $z \n";
+    $darkfile = "'$ENV{LINAC_DIR}/darkr_for_skdetsim/output/darkr.0$badrun.txt'";
+
+    # Loop for sub runs
     my $count;
     for ($count = 0; $count < 20; $count++){
-      my $scount = sprintf("%03d",$count);
-      my $filef  = sprintf("./card/0%s.%03d",$RunNumber,$count);
-      print " card filename $filef \n";
-      &WriteCardFile($filef);
-      my $files  = sprintf("./script/0%s.%03d.csh",$RunNumber, $count);
-      print " script filename $files \n";
-      &WriteScriptFile($files,$filef,$RunNumber, $count);
 
-      $cmd = "qsub -q lowe -o out/0$RunNumber.$scount -e err/0$RunNumber.$scount $files";
-      system $cmd;
-
+      # Make a card file
+      my $file_card  = sprintf("./card/0%s.%03d",$RunNumber,$count);
+      print " card filename $file_card \n";
+      &WriteCardFile($file_card);
       $seed1++; 
       $seed2++; 	
+
+      # Make a script file
+      my $file_script  = sprintf("./script/0%s.%03d.csh",$RunNumber, $count);
+      print " script filename $file_script \n";
+      &WriteScriptFile($file_script,$file_card,$RunNumber, $count);
+
+      # Submit job
+      my $scount = sprintf("%03d",$count);
+      $cmd = "qsub -q lowe -o out/0$RunNumber.$scount -e err/0$RunNumber.$scount $file_script";
+      print cmd;
+      #system $cmd;
+
     }
   }
 }
@@ -63,7 +84,6 @@ die "Normal End";
 
 sub WriteCardFile() {
   my $file = $_[0];
-  my $count = sprintf("%03d",$_[1]);
   open (CARD,">$file");
   foreach $cardlist (@card_data){
     chomp($cardlist);
@@ -95,10 +115,10 @@ sub WriteScriptFile() {
 
   open (SCRIPT,">$file");
   print SCRIPT "#!/bin/csh -f\n";
-  print SCRIPT "cd /home/mharada/Lowe/LINAC/EScale/sk5_linac_tools/detsim_new/\n";
-  print SCRIPT "source /home/sklowe/skofl/r29166/env.csh\n";
+  print SCRIPT "cd $ENV{LINAC_DIR}/detsim/trunk\n";
+  print SCRIPT "source $skofl_env\n";
   print SCRIPT "hostname\n";
-  print SCRIPT "/home/mharada/Lowe/LINAC/EScale/sk5_linac_tools/detsim_new/trunk/skdetsim $card /disk02/lowe8/mharada/linac/sk5/detsim/out_root_$version/lin.0$runn.$count.root $runn \n";
+  print SCRIPT "./skdetsim $card $out_dir/lin.0$runn.$count.root $runn \n";
 
   close SCRIPT;
   $cmd = "chmod 755 $file";
