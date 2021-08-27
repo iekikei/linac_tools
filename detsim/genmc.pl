@@ -53,7 +53,8 @@ foreach $line (@runsum){
   if ($mod==0 && $RunNumber>=$run_min && $RunNumber<=$run_max){
 
     print "$RunNumber $mom $x $y $z \n";
-    $darkfile = "'$ENV{LINAC_DIR}/darkr_for_skdetsim/output/darkr.0$badrun.txt'";
+    $darkfile = "'../darkr_for_skdetsim/output/darkr.0$badrun.txt'";
+    #$darkfile = "'$ENV{LINAC_DIR}/darkr_for_skdetsim/output/darkr.0$badrun.txt'";
 
     # Loop for sub runs
     my $count;
@@ -74,8 +75,7 @@ foreach $line (@runsum){
       # Submit job
       my $scount = sprintf("%03d",$count);
       $cmd = "qsub -q lowe -o out/0$RunNumber.$scount -e err/0$RunNumber.$scount $file_script";
-      print cmd;
-      #system $cmd;
+      system $cmd;
 
     }
   }
@@ -115,10 +115,11 @@ sub WriteScriptFile() {
 
   open (SCRIPT,">$file");
   print SCRIPT "#!/bin/csh -f\n";
-  print SCRIPT "cd $ENV{LINAC_DIR}/detsim/trunk\n";
+  print SCRIPT "source $ENV{LINAC_DIR}/setup.csh\n";
+  print SCRIPT "cd $ENV{LINAC_DIR}/detsim\n";
   print SCRIPT "source $skofl_env\n";
   print SCRIPT "hostname\n";
-  print SCRIPT "./skdetsim $card $out_dir/lin.0$runn.$count.root $runn \n";
+  print SCRIPT "./trunk/skdetsim $card $out_dir/lin.0$runn.$count.root $runn \n";
 
   close SCRIPT;
   $cmd = "chmod 755 $file";
