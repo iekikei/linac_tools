@@ -1,0 +1,46 @@
+=================================================================
+PMT-by-PMT dark rate after appying gain-corrected dark factor
+=================================================================
+
+Original working directory:
+/home/ynakajim/SK/mc/dark_rate/
+
+To generate dark rate input values for skdetsim, run:
+./read_dark_rate.sh
+
+----------------------------------------------------
+
+(2017-09-07)
+Generated dark rate files for recent runs;
+
+-- Procedure:
+
+New gain file for recent runs
+/home/ocon/waterjob/src/rep10.5newgain/water.ave10newgain
+
+Start run: 075778 Apr-12-17
+End run: 076822 Sep-04-17
+
+Modified read_dark_rate.C to read the above gain table
+Modified read_dark_rate.sh so that it goes through only the new runs.
+
+nohup ./read_dark_rate.sh > read_dark_rate_log_2017-09-07.txt &
+
+
+(2018-02-27)
+generated dark rate files for recent runs.
+/home/ocon/waterjob/src/rep10.5newgain/water.ave10newgain
+Start run: 076826 Sep-05-17
+End run: 077714 Feb-23-18
+
+nohup ./read_dark_rate.sh > read_dark_rate_log_2018-02-27.txt &
+
+
+(2019-03-14)
+generated dark rate files until May 29, 2018
+/home/skofl/sklib_gcc4.8.5/skofl-trunk/const/water.ave10.2
+Start run: 077715 Feb-24-18
+End run: 077957 May-29-18
+
+nohup ./read_dark_rate.sh > read_dark_rate_log_2019-03-14.txt &
+
