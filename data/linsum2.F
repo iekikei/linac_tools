@@ -11,33 +11,18 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 #include "lininfo2.h"
 
+      character*100 linac_dir,runsum
       character*100 fname,fname_ge
       integer run,mode,trg
       real x,y,z,momentum
       integer badrun,run_num
       integer i
 
-      if(run_num.lt.30000) then
-         fname = '/home/sklowe/linac/const/'//
-     &     'linac_sk2_runsum.dat'
-         fname_ge = '/home/sklowe/linac/const/'//
-     &     'ge_sk2_runsum.dat'
-      else if(run_num.lt.40000) then
-         fname = '/home/sklowe/linac/const/'//
-     &     'linac_sk3_runsum.dat'
-         fname_ge = '/home/sklowe/linac/const/'//
-     &     'ge_sk3_runsum.dat'
-      else if(run_num.lt.80000) then
-         fname = '/home/sklowe/linac/const/'//
-     &     'linac_sk4_runsum.dat'
-         fname_ge = '/home/sklowe/linac/const/'//
-     &     'ge_sk4_runsum.dat'
-      else
-         fname = '/home/sklowe/linac/const/'//
-     &     'linac_sk5_runsum.dat'
-         fname_ge = '/home/sklowe/linac/const/'//
-     &     'ge_sk5_runsum.dat'
-      endif
+      call get_environment_variable('RUNSUM_DIR', linac_dir)
+      runsum = "/runsum.dat"
+      fname = trim(linac_dir) // trim(runsum)
+      runsum = "/ge_runsum.dat"
+      fname_ge = trim(linac_dir) // trim(runsum)
 
       open(10,file=fname,status = 'old',form='formatted')
       open(11,file=fname_ge,status = 'old',form='formatted')

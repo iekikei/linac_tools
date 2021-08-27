@@ -1,5 +1,13 @@
 #!/usr/bin/perl 
 
+# Settings
+$run_min = 86119;
+$run_max = 86161;
+$data_dir = '/disk02/data7/sk5/lin';
+$analysis_dir = "$ENV{RUNSUM_DIR}/data";
+$skofl_env = '/usr/local/sklib_gcc4.8.5/skofl-trunk/env.csh';
+
+# Make directories if they do not exist
 if(!-d "./script") {
     mkdir "./script";
 }
@@ -12,46 +20,55 @@ if(!-d "./err") {
     mkdir "./err";
 }
 
-open (INP,"/home/sklowe/linac/const/linac_sk5_runsum.dat");
+if(!-d "./lin") {
+    mkdir "./lin";
+}
 
-@raw_data =<INP>;
+# Open run summary file
+open (INP,"$ENV{RUNSUM_DIR}/runsum.dat");
+@runsum =<INP>;
 close INP;
 
-foreach $list (@raw_data){
-  chomp($list);
-  ($RunNumber,$mom,$mod,$x,$y,$z,$badrun)=split(/ /,$list);
+# Loop for lines in run summary file
+foreach $line (@runsum){
 
-  #if ($RunNumber>=81500 && $mod==1 && $RunNumber < 81850){
-  if ($RunNumber>=81500 && $mod==0 && $RunNumber < 81850){
-    $runn = sprintf("%06d",$RunNumber);
-    print " leggo $RunNumber $mom $x $y $z \n";
+  # Get run information
+  chomp($line);
+  ($runnum,$mom,$mod,$x,$y,$z,$badrun)=split(/ /,$line);
 
-    my $files  = sprintf("./script/%s.csh",$runn);
-    print " script filename $files \n";
+  # Only analyze normal LINAC run
+  if ($mod==0 && $runnum>=$run_min && $runnum<=$run_max){
 
-# input file list
-    $dir = substr($runn,0,4);
-    $fname = sprintf("");
-    $blnk  = sprintf(" ");
-    foreach $filelist (`/bin/ls -1 /disk02/data7/sk5/lin/$dir/$runn/`){
+    # Make a list of subrun files
+    $runnum2 = sprintf("%06d",$runnum);
+    $dir = substr($runnum2,0,4);
+    $input_files = "";
+    foreach $filelist (`/bin/ls -1 $data_dir/$dir/$runnum2/`){
       chomp($filelist);
-      $fname = $fname.$blnk."/disk02/data7/sk5/lin/$dir/$runn/".$filelist;
+      $input_files = $input_files." $data_dir/$dir/$runnum2/".$filelist;
     }
 
-    open (SCRIPT,">$files");
+    # Make a script file
+    my $script_file  = sprintf("./script/%s.csh",$runnum2);
+    print "Run$runnum $mom $x $y $z $script_file\n";
+    open (SCRIPT,">$script_file");
     print SCRIPT "#!/bin/csh -f\n";
-    print SCRIPT "cd /home/mharada/Lowe/LINAC/EScale/sk5_linac_tools/data/\n";
-    print SCRIPT "source /usr/local/sklib_gcc4.8.5/skofl-trunk/env.csh\n";
-    #print SCRIPT "source /home/sklowe/skofl/r29166/env.csh\n";
+    print SCRIPT "cd $analysis_dir\n";
+    print SCRIPT "source $skofl_env\n";
+    print SCRIPT "source $ENV{RUNSUM_DIR}/setup.csh\n";
     print SCRIPT "hostname\n";
-    print SCRIPT "./lowfit_sk4_root /disk02/lowe8/mharada/linac/sk5/data/lin.$runn.corr_mod.root $x $y $z $RunNumber $fname\n";
+    print SCRIPT "./lowfit_sk4_root ./lin/lin.$runnum2.root $x $y $z $runnum $input_files\n";
     close SCRIPT;
-    $cmd = "chmod 755 $files";
+    $cmd = "chmod 755 $script_file";
     system $cmd;
 
-    $cmd = "qsub -q calib -o out/0$RunNumber -e err/0$RunNumber $files";
+    # Submit a job for this script
+    $cmd = "qsub -q lowe -o out/0$runnum -e err/0$runnum $script_file";
     system $cmd;
-  }    
+    
+  } 
+   
 }
+
 die "Normal End";
 
