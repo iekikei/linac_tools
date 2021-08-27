@@ -2,3 +2,8 @@
 *.o
 *.root
 *.eps
+compare/linac
+.d00*
+data/err
+data/out
+data/script
