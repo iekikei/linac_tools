@@ -48,10 +48,8 @@
 /SKG4/Global/Run 999999
 /SKG4/Global/Subrun 1
 /SKG4/Global/PhysicsType 0
+
 /SKG4/Global/Geometry 5
-
-
-
 #=========================================================#
 #====                                                     #
 #==                         #04                           #
@@ -84,9 +82,16 @@
 /SKG4/Detector/Material/VacuumProperty  ./dat_file/MaterialProperty/Latest/VacuumProperty.dat
 /SKG4/Detector/Material/AirProperty  ./dat_file/MaterialProperty/Latest/AirProperty.dat
 /SKG4/Detector/Material/GdHydrate 8
+
+#/SKG4/Detector/Material/GdConcentration 0.0
 /SKG4/Detector/Material/GdConcentration 0.0
-/SKG4/Detector/Material/WaterTransparencyRun RUNNUM
-/SKG4/Detector/Material/IDTBAParameter RUNNUM
+
+
+/SKG4/Detector/Material/IDTBAParameter 0
+#/SKG4/Detector/Material/IDTBAParameter RUNNUM
+
+#/SKG4/Detector/Material/WaterTransparencyRun RUNNUM
+/SKG4/Detector/Material/WaterTransparencyRun 0
 /SKG4/Detector/Material/WaterParameter 201908
 
 
@@ -152,8 +157,12 @@
 #                                                       ==#
 #                                                     ====#
 #=========================================================#
-/SKG4/DarkNoise/Mode 2
-/SKG4/DarkNoise/Run RUNNUM
+
+#/SKG4/DarkNoise/Mode 2
+#/SKG4/DarkNoise/Run RUNNUM
+
+/SKG4/DarkNoise/Mode 1
+/SKG4/DarkNoise/ConstValue 6
 
 
 #=========================================================#
@@ -181,7 +190,7 @@
 /SKG4/RootFile/TTree/PMT false
 /SKG4/RootFile/TTree/Incident false
 /SKG4/RootFile/TTree/Secondary false
-/SKG4/RootFile/Name result_file/rootfile/Calib_LINAC.root
+/SKG4/RootFile/Name OUTFILE
 
 
 #=========================================================#
