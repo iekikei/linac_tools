@@ -83,6 +83,7 @@ c*** check lininfo
       call skbadch(lin_badrun(nrun), 1, iret)
                
       call lfwater(relapse(lin_badrun(nrun)), watert)
+      watert=13000.000
       print *, 'nrunsk, lin_badrun, watert = ',
      $     nrun, lin_badrun(nrun), watert
       

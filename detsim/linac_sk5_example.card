@@ -237,7 +237,8 @@ DS-NORMQE 0.86983996
 
 
 CDSNORMQE
-DS-QETAB 51
+CDS-QETAB 51
+DS-QETAB 52
 
 C Set 1(AP_DS), if you trace the cherenkov light in ANTI counter
 C LE_/LE_MULTI_DS : usually 0 (default:0)
