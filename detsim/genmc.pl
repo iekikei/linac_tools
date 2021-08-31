@@ -53,8 +53,8 @@ foreach $line (@runsum){
   if ($mod==0 && $RunNumber>=$run_min && $RunNumber<=$run_max){
 
     print "$RunNumber $mom $x $y $z \n";
-    $darkfile = "'../darkr_for_skdetsim/output/darkr.0$badrun.txt'";
-    #$darkfile = "'$ENV{LINAC_DIR}/darkr_for_skdetsim/output/darkr.0$badrun.txt'";
+    $darkfile = "'../darkr/output/darkr.0$badrun.txt'";
+    #$darkfile = "'$ENV{LINAC_DIR}/darkr/output/darkr.0$badrun.txt'";
 
     # Loop for sub runs
     my $count;
