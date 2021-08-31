@@ -1,11 +1,7 @@
 #!/usr/bin/perl 
 
 # Settings
-$run_min = 86119;
-$run_max = 86161;
 $data_dir = '/disk02/data7/sk5/lin';
-$analysis_dir = "$ENV{LINAC_DIR}/data";
-$skofl_env = '/usr/local/sklib_gcc4.8.5/skofl-trunk/env.csh';
 
 # Make directories if they do not exist
 if(!-d "./script") {
@@ -37,7 +33,7 @@ foreach $line (@runsum){
   ($runnum,$mom,$mod,$x,$y,$z,$badrun)=split(/ /,$line);
 
   # Only analyze normal LINAC run
-  if ($mod==0 && $runnum>=$run_min && $runnum<=$run_max){
+  if ($mod==0) {
 
     # Make a list of subrun files
     $run0 = sprintf("%06d",$runnum);
@@ -53,11 +49,11 @@ foreach $line (@runsum){
     print "Run$runnum $mom $x $y $z $script_file\n";
     open (SCRIPT,">$script_file");
     print SCRIPT "#!/bin/csh -f\n";
-    print SCRIPT "cd $analysis_dir\n";
-    print SCRIPT "source $skofl_env\n";
+    print SCRIPT "cd $ENV{LINAC_DIR}/data\n";
     print SCRIPT "source $ENV{LINAC_DIR}/setup.csh\n";
+    print SCRIPT "source $ENV{SKOFL_ROOT}/env.csh\n";
     print SCRIPT "hostname\n";
-    print SCRIPT "./lowfit_sk4_root ./lin/lin.$run0.root $x $y $z $runnum $input_files\n";
+    print SCRIPT "./lowfit_sk4_root ./fit/lin.$run0.root $x $y $z $runnum $input_files\n";
     close SCRIPT;
     $cmd = "chmod 755 $script_file";
     system $cmd;

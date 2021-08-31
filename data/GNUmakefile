@@ -1,10 +1,5 @@
 #
 #
-#ifndef SKOFL_ROOT
-#SKOFL_ROOT =/home/sklowe/skofl/r29166
-#SKOFL_ROOT =/home/sklowe/skofl/r29166
-#endif
-SKOFL_ROOT = /usr/local/sklib_gcc4.8.5/skofl-trunk
 
 include $(SKOFL_ROOT)/config.gmk
 

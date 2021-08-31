@@ -1,7 +1,6 @@
 #!/usr/bin/perl 
 
-$version = "tune";
-
+# Make directories if they do not exist
 if(!-d "./script") {
     mkdir "./script";
 }
@@ -14,30 +13,35 @@ if(!-d "./err") {
     mkdir "./err";
 }
 
-if(!-d "./card") {
-    mkdir "./card";
+if(!-d "./fit") {
+    mkdir "./fit";
 }
 
-if(!-d "/disk02/lowe8/mharada/linac/sk5/detsim/lowfit_$version/") {
-    mkdir "/disk02/lowe8/mharada/linac/sk5/detsim/lowfit_$version/";
-}
-
-
-open (INP,"/home/sklowe/linac/const/linac_sk5_runsum.dat");
-@raw_data =<INP>;
+# Open run summary file
+open (INP,"$ENV{LINAC_DIR}/runsum.dat");
+@runsum =<INP>;
 close INP;
 
-foreach $list (@raw_data){
-    chomp($list);
-    ($RunNumber,$mom,$mod,$x,$y,$z,$badrun)=split(/ /,$list);
-    if ($RunNumber>=80000 && $mod==0 && $RunNumber<85000){
-      for ($count = 0; $count < 20; $count++){
-        my $count2 = sprintf("%03d",$count);
-        my $files  = sprintf("./script/mcfit.0%s.%03d.csh",$RunNumber, $count);
-        print " script filename $files \n";
-        &WriteScriptFile($files,$RunNumber, $count);
+# Loop for lines in run summary file
+foreach $line (@runsum){
 
-        $cmd = "qsub -q calib -o out/mcfit.0$RunNumber.$count2 -e err/mcfit.0$RunNumber.$count2 $files";
+    chomp($line);
+    ($runnum,$mom,$mod,$x,$y,$z,$badrun)=split(/ /,$line);
+
+    # Only analyze normal LINAC run
+    if ($mod==0){
+
+      # Loop for sub-runs
+      for ($count = 0; $count < 20; $count++){
+
+	# Make a script file
+        my $count2 = sprintf("%03d",$count);
+        my $script_file  = sprintf("./script/mcfit.0%s.%03d.csh",$runnum, $count);
+        &WriteScriptFile($script_file, $runnum, $count);
+
+	# Submit a job
+        $cmd = "qsub -q all -o out/0$runnum.$count2 -e err/0$runnum.$count2 $script_file";
+	print "$cmd\n";
         system $cmd;
       }
     }
@@ -52,10 +56,11 @@ sub WriteScriptFile() {
     my $count = sprintf("%03d",$_[2]);
     open (SCRIPT,">$file");
     print SCRIPT "#!/bin/csh -f\n";
-    print SCRIPT "cd /home/mharada/Lowe/LINAC/EScale/sk5_linac_tools/detsim_new/\n";
-    print SCRIPT "source /usr/local/sklib_gcc4.8.5/skofl-trunk/env.csh\n";
+    print SCRIPT "cd $ENV{LINAC_DIR}/detsim\n";
+    print SCRIPT "source $ENV{SKOFL_ROOT}/env.csh\n";
+    print SCRIPT "source $ENV{LINAC_DIR}/setup.csh\n";
     print SCRIPT "hostname\n";
-    print SCRIPT "./lowfit_mc $runn /disk02/lowe8/mharada/linac/sk5/detsim/lowfit_$version/wtf_lin.${runn}.$count.root  /disk02/lowe8/mharada/linac/sk5/detsim/out_root_$version/lin.${runn}.${count}.root\n";
+    print SCRIPT "./lowfit_mc $runn ./fit/lin.${runn}.$count.root ./out/lin.${runn}.${count}.root\n";
     close SCRIPT;
     $cmd = "chmod 755 $file";
     system $cmd;

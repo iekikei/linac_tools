@@ -1,16 +1,5 @@
 #!/usr/bin/perl 
 
-# Settings
-$run_min = 86119;
-$run_max = 86161;
-$data_dir = '/disk02/data7/sk5/lin';
-$analysis_dir = "$ENV{LINAC_DIR}/data";
-$skofl_env = '/usr/local/sklib_gcc4.8.5/skofl-trunk/env.csh';
-$seed1 = 45097;
-$seed2 = 21263;
-$version = "";
-$out_dir = "$ENV{LINAC_DIR}/skg4/lin$version";
-
 # Make output directories if they do not exist
 if(!-d "./card") {
     mkdir "./card";
@@ -28,8 +17,8 @@ if(!-d "./err") {
     mkdir "./err";
 }
 
-if(!-d $out_dir) {
-    mkdir $out_dir;
+if(!-d "./data") {
+    mkdir "./data";
 }
 
 # Template macro file
@@ -42,6 +31,10 @@ open(INP,"$ENV{LINAC_DIR}/runsum.dat");
 @runsum =<INP>;
 close INP;
 
+# Random seed settings
+$seed1 = 45097;
+$seed2 = 21263;
+
 # Loop for lines in run summary data
 foreach $line (@runsum){
 
@@ -50,7 +43,7 @@ foreach $line (@runsum){
     ($RunNumber,$mom,$mod,$x,$y,$z,$badrun)=split(/ /,$line);
 
     # Select runs of interest
-    if ($mod==0 && $RunNumber>=$run_min && $RunNumber<=$run_max){
+    if ($mod==0){
 	
       print "$RunNumber $mom $x $y $z \n";
 
@@ -118,7 +111,7 @@ sub WriteCardFile() {
       $cardlist2 = "/SKG4/Calibration/LINAC/SetRun $RunNumber";
     }
     if($cardlist2 =~ /\/SKG4\/RootFile\/Name OUTFILE/){
-      $cardlist2 = "/SKG4/RootFile/Name $out_dir/lin.0${RunNumber}.$count.root";
+      $cardlist2 = "/SKG4/RootFile/Name data/lin.0${RunNumber}.$count.root";
     }
     print CARD "$cardlist2\n";
     
@@ -138,7 +131,7 @@ sub WriteScriptFile() {
     print SCRIPT "#!/bin/csh -f\n";
     print SCRIPT "source $ENV{LINAC_DIR}/setup.csh\n";
     print SCRIPT "cd $ENV{LINAC_DIR}/skg4/trunk/\n";
-    print SCRIPT "source $skofl_env\n";
+    print SCRIPT "source $ENV{SKOFL_ROOT}/env.csh\n";
     print SCRIPT "source $ENV{LINAC_DIR}/skg4/trunk/G4ROOTsource.csh\n";
     print SCRIPT "hostname\n";
     print SCRIPT "$ENV{LINAC_DIR}/skg4/trunk/bin/Linux-g++/SKG4 $ENV{LINAC_DIR}/skg4/$card $rndm\n";
