@@ -5,21 +5,16 @@
 # SKOFL_ROOT = /skofl
 #
 
-#ifndef SKOFL_ROOT
-SKOFL_ROOT = /usr/local/sklib_gcc4.8.5/skofl-trunk
-#SKOFL_ROOT =/home/sklowe/skofl/r29166
-#endif
-
 include $(SKOFL_ROOT)/config.gmk
 
 LOCAL_INC	= 
-LOCAL_LIBS	= skwt.o lfneweff_sk4.o lfallfit_sk4_mc.o -lsklowe_7.0 -lsollib_4.0 -lwtlib_5.1 -lbonsai_3.3 -lstmu -lska
+LOCAL_LIBS	= skwt.o lfneweff_sk4.o lfneweff_sk4_final_qe43.o lfneweff_sk4_final_qe41.o lfallfit_sk4_mc.o lfallfit_sk4_final_qe43.o lfallfit_sk4_final_qe41.o lftba_gain_corr.o -lsklowe_7.0 -lsollib_4.0 -lwtlib_5.1 -lbonsai_3.3 -lstmu -lska
 
 #
 #  Objects
 #
 
-OBJS   = skwt.o lfallfit_sk4_mc.o lfneweff_sk4.o lowfit_mc 
+OBJS   = skwt.o lfallfit_sk4_mc.o lfallfit_sk4_final_qe43.o lfallfit_sk4_final_qe41.o lfneweff_sk4.o lfneweff_sk4_final_qe43.o lfneweff_sk4_final_qe41.o lftba_gain_corr.o lowfit_mc lowfit_sk4_root
 
 all: $(OBJS) 
 
