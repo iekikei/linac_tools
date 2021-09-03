@@ -65,6 +65,7 @@ foreach $line (@runsum){
 
 	# Submit job
         $cmd = "qsub -q lowe -o out/0$RunNumber.$count -e err/0$RunNumber.$count $file_script";
+	      #print "$cmd\n";
         system $cmd;
 
       }
@@ -130,7 +131,7 @@ sub WriteScriptFile() {
     open (SCRIPT,">$file");
     print SCRIPT "#!/bin/csh -f\n";
     print SCRIPT "source $ENV{LINAC_DIR}/setup.csh\n";
-    print SCRIPT "cd $ENV{LINAC_DIR}/skg4/trunk/\n";
+    print SCRIPT "cd $ENV{LINAC_DIR}/skg4/trunk\n";
     print SCRIPT "source $ENV{SKOFL_ROOT}/env.csh\n";
     print SCRIPT "source $ENV{LINAC_DIR}/skg4/trunk/G4ROOTsource.csh\n";
     print SCRIPT "hostname\n";

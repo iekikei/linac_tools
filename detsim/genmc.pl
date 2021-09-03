@@ -68,6 +68,7 @@ foreach $line (@runsum){
       # Submit job
       my $scount = sprintf("%03d",$count);
       $cmd = "qsub -q lowe -o out/0$RunNumber.$scount -e err/0$RunNumber.$scount $file_script";
+      #print "$cmd\n";
       system $cmd;
 
     }

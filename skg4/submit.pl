@@ -35,7 +35,8 @@ foreach $line (@runsum){
         &WriteScriptFile($script_file, $RunNumber, $count);
 
         $cmd = "qsub -q lowe -o out/mcfit.0$RunNumber.$count2 -e err/mcfit.0$RunNumber.$count2 $script_file";
-        system $cmd;
+	print "$cmd\n";
+        #system $cmd;
       }
     }
 
