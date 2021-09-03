@@ -112,7 +112,7 @@ sub WriteCardFile() {
       $cardlist2 = "/SKG4/Calibration/LINAC/SetRun $RunNumber";
     }
     if($cardlist2 =~ /\/SKG4\/RootFile\/Name OUTFILE/){
-      $cardlist2 = "/SKG4/RootFile/Name data/lin.0${RunNumber}.$count.root";
+      $cardlist2 = "/SKG4/RootFile/Name $ENV{LINAC_DIR}/skg4/data/lin.0${RunNumber}.$count.root";
     }
     print CARD "$cardlist2\n";
     
