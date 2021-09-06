@@ -43,6 +43,8 @@
 #include <TText.h>
 #include <TLine.h>
 
+#define N_RUN 3
+
 std::string const LINAC_DIR = std::getenv("LINAC_DIR"); 
 std::string const RUNSUM_TXT = LINAC_DIR + "/runsum.dat";
 
@@ -53,7 +55,7 @@ void read_me(int flag,int run,double *x, double *y){
   std::string fname="";
   int id = 10;
   std::string dir="";
-  dir = "/home/mharada/Lowe/LINAC/EScale/sk5_linac_tools/compare_tune/txt/";
+  dir = LINAC_DIR + "/compare/txt/";
   sprintf(cname,"linac_run%06d.dat",run);
   //sprintf(cname,"linac2016_run%06d_tune.dat",run);
   fname = dir+cname;
@@ -79,8 +81,8 @@ void read_me(int flag,int run,double *x, double *y){
 }
 
 int main(int argc,char *argv[]){
-  double index[9]={0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5};
-  int linac_run[9];
+  double index[N_RUN]={0.5,1.5,2.5};
+  int linac_run[N_RUN];
   double a,b,c,d;
   int const index_linac =300;
   int A_linac_run = 0;
@@ -89,6 +91,9 @@ int main(int argc,char *argv[]){
   int isecond = 0;
   char str[256];
 
+  if (argc != 2) {
+    printf("Usage: ./corepmt_tune [Energy mode]");    
+  }
   int EMode = atoi(argv[1]);
 
   std::ifstream IN;
@@ -100,7 +105,7 @@ int main(int argc,char *argv[]){
 
   for(int i=0;i<index_linac;i++){
     IN>>A_linac_run>>e_mode>>run_mode>>a>>b>>c>>d ;
-    if(A_linac_run>81500 && A_linac_run<82000 && e_mode==EMode && run_mode==0 && A_linac_run != 81588){
+    if(e_mode==EMode && run_mode==0){
       linac_run[isecond] = A_linac_run;
       isecond++;
     } else {
@@ -110,22 +115,22 @@ int main(int argc,char *argv[]){
   IN.close();
 
   char runnum[400];
-  sprintf(runnum,"   %d %d %d %d %d %d",linac_run[0],linac_run[1],linac_run[2],linac_run[3],linac_run[4],linac_run[5]);
+  sprintf(runnum,"          %d           %d           %d",linac_run[0],linac_run[1],linac_run[2]);
 
-  double zero[9]={0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5};
+  double zero[N_RUN]={0.5,0.5,0.5};
 
-  for(int i=0;i<9;i++){
+  for(int i=0;i<N_RUN;i++){
     //std::cout<<"linac_run="<<linac_run[i]<<std::endl;
   }
 
-  double val[2][9]={0.0};
-  double val_err[2][9]={0.0};
-  double peak[3][9],peakerr[3][9];
+  double val[2][N_RUN]={0.0};
+  double val_err[2][N_RUN]={0.0};
+  double peak[3][N_RUN],peakerr[3][N_RUN];
   double rave[2]={0.0},rave_err[2]={0.0},rrms[2]={0.0};
   double p;
   double pe;
   float nzero = 0;
-  for(int i=0;i<9;i++){
+  for(int i=0;i<N_RUN;i++){
     for(int j=0;j<3;j++){
       read_me(j, linac_run[i],&p, &pe);
       
@@ -134,7 +139,7 @@ int main(int argc,char *argv[]){
     }
   }
 
-  for(int i=0;i<9;i++){
+  for(int i=0;i<N_RUN;i++){
     if ( peak[0][i] < 0.) {
       nzero ++;
       continue;
@@ -149,11 +154,11 @@ int main(int argc,char *argv[]){
     rave_err[1] = pow(val_err[1][i],2); 
   }
 
-  rave[0]  = rave[0]/(9.0 - nzero);
-  rave[1]  = rave[1]/(9.0 - nzero);
+  rave[0]  = rave[0]/(N_RUN - nzero);
+  rave[1]  = rave[1]/(N_RUN - nzero);
 
   float nzero2 = 0.;
-  for(int i=0;i<9;i++){
+  for(int i=0;i<N_RUN;i++){
     if ( peak[0][i] < 0.) {
       nzero2 ++;
       continue;
@@ -162,8 +167,8 @@ int main(int argc,char *argv[]){
     rrms[1] = rrms[1] + pow(val[1][i]-rave[1],2);
   }
 
-  rrms[0] = sqrt(rrms[0] /(9.0-nzero2));
-  rrms[1] = sqrt(rrms[1] /(9.0-nzero2));
+  rrms[0] = sqrt(rrms[0] /(N_RUN-nzero2));
+  rrms[1] = sqrt(rrms[1] /(N_RUN-nzero2));
 
   char rrave[2][400];
   sprintf(rrave[0],"AVE = %5.4lf  RMS = %5.4lf",rave[0],rrms[0]);
@@ -200,14 +205,14 @@ int main(int argc,char *argv[]){
   c1->Divide(2,1);
   TGraphErrors  *g[3];
   for(int flag=0;flag<3;flag++){
-    g[flag] = new TGraphErrors(9,index,peak[flag],zero,peakerr[flag]);
+    g[flag] = new TGraphErrors(N_RUN,index,peak[flag],zero,peakerr[flag]);
     g[flag]->SetMarkerColor(Color[flag]);
     g[flag]->SetLineColor(Color[flag]);
   }
   TMultiGraph *mtg = new TMultiGraph();
 
-  TGraphErrors *plot1  = new TGraphErrors(9,index,val[0],zero,val_err[0]);
-  TGraphErrors *plot2  = new TGraphErrors(9,index,val[1],zero,val_err[1]);
+  TGraphErrors *plot1  = new TGraphErrors(N_RUN,index,val[0],zero,val_err[0]);
+  TGraphErrors *plot2  = new TGraphErrors(N_RUN,index,val[1],zero,val_err[1]);
 
   c1->cd(1); 
   gPad->SetLeftMargin(0.25);
@@ -223,7 +228,7 @@ int main(int argc,char *argv[]){
   //mtg->SetMinimum(60.);
   mtg->SetMaximum(peak[0][5]+5);
   mtg->SetMinimum(peak[0][5]-5);
-  mtg->GetXaxis()->SetLimits(0.,9.);
+  mtg->GetXaxis()->SetLimits(0.,N_RUN);
   
   TText *tlabel = new TText(0.20,0.10,runnum);
   tlabel->Draw();
@@ -255,7 +260,7 @@ int main(int argc,char *argv[]){
   plot1->SetMaximum(1.03);
   plot1->SetMinimum(0.97);
   plot1->SetTitle(";Run number;MC/DATA");
-  plot1->GetXaxis()->SetLimits(0.,9.);
+  plot1->GetXaxis()->SetLimits(0.,N_RUN);
   plot2->Draw("P");
 
 
@@ -279,17 +284,17 @@ int main(int argc,char *argv[]){
   t4->Draw();
   t4->SetNDC(1);
 
-  TLine *z1 = new TLine(0,1,9,1);
+  TLine *z1 = new TLine(0,1,N_RUN,1);
   z1 ->SetLineColor(1);
   z1 ->SetLineStyle(1);
   z1 ->SetLineWidth(3);
   z1 ->Draw();
-  TLine *z2 = new TLine(0,1.01,9,1.01);
+  TLine *z2 = new TLine(0,1.01,N_RUN,1.01);
   z2 ->SetLineColor(1);
   z2 ->SetLineWidth(2);
   z2 ->SetLineStyle(2);
   z2 ->Draw();
-  TLine *z3 = new TLine(0,0.99,9,0.99);
+  TLine *z3 = new TLine(0,0.99,N_RUN,0.99);
   z3 ->SetLineColor(1);
   z3 ->SetLineStyle(2);
   z3 ->SetLineWidth(2);
