@@ -1,6 +1,4 @@
 #
-SKOFL_ROOT = /usr/local/sklib_gcc4.8.5/skofl_16c
-
 include $(SKOFL_ROOT)/config.gmk
 
 LOCAL_INC	= 

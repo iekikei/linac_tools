@@ -1,5 +1,4 @@
 #
-SKOFL_ROOT = /usr/local/sklib_gcc4.8.5/skofl-trunk
 
 include $(SKOFL_ROOT)/config.gmk
 LOCAL_INC	= 
