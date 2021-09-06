@@ -12,6 +12,14 @@ if(!-d "./err") {
     mkdir "./err";
 }
 
+if(!-d "./pdf") {
+    mkdir "./pdf";
+}
+
+if(!-d "./txt") {
+    mkdir "./txt";
+}
+
 open (INP,"$ENV{LINAC_DIR}/runsum.dat");
 
 @raw_data =<INP>;
