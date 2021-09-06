@@ -39,7 +39,8 @@
 #include<cmath>
 #include<sstream>
 
-std::string const LINAC_TXT = "/home/sklowe/linac/const/linac_sk5_runsum.dat";
+std::string const LINAC_DIR = std::getenv("LINAC_DIR");
+std::string const LINAC_TXT = LINAC_DIR + "/runsum.dat";
 
 int const POSI = 6;
 int const MODE = 6;
@@ -51,7 +52,7 @@ void read_me(int run,double *data,double *data_e, double *data_err, double *g3, 
   std::string fname="";
   int id = 10;
   std::string dir="";
-  dir = "/home/mharada/Lowe/LINAC/EScale/sk5_linac_tools/compare/txt/";
+  dir = LINAC_DIR + "/compare/txt/";
 
   sprintf(cname,"linac_run%06d.dat",run);
 
@@ -79,11 +80,6 @@ void read_me(int run,double *data,double *data_e, double *data_err, double *g3, 
 
 
 int main(const int argc,char *argv[]){
-  if(argc!=3){
-    std::cout<<"How to use: Write -> runnum_vs_neffhit <first runnum> <end runnum>"<<std::endl;
-    std::cout<<"Please try again."<<std::endl;
-    return 1;
-  }
   int linac_run;
   double pipe_x;
   double pipe_y;
@@ -91,9 +87,6 @@ int main(const int argc,char *argv[]){
   int e_mode;
   int run_mode;
   int other_run;
-
-  int Start_RUNNUM = atoi(argv[1]);
-  int End_RUNNUM = atoi(argv[2]);
 
   std::ifstream IN;
   IN.open(LINAC_TXT.c_str());
@@ -109,7 +102,7 @@ int main(const int argc,char *argv[]){
 
   for(int i=0;i<list;i++){
     IN>>linac_run>>e_mode>>run_mode>>pipe_x>>pipe_y>>pipe_z>>other_run;
-    if((Start_RUNNUM <= linac_run) && (linac_run <= End_RUNNUM) && (run_mode == 0)){
+    if(run_mode == 0){
       if((linac_run != 74824) && (linac_run != 74970)){
         A_linac_run[index] = linac_run;
 
@@ -247,7 +240,6 @@ int main(const int argc,char *argv[]){
   TGraphErrors *g_d = new TGraphErrors(index,num,val[0],zero,val[1]);
   g_d->SetMarkerStyle(8);
   g_d->SetTitle(";Runnumber;Neffhit");
-  g_d->GetXaxis()->SetLimits(81580,81850);
   g_d->Draw("AP");
 
   TGraphErrors *g_3 = new TGraphErrors(index,num_3,val[2],zero,val[3]);
@@ -281,7 +273,6 @@ int main(const int argc,char *argv[]){
   gratio_3->UseCurrentStyle();
   gratio_3->SetTitle(";Runnumber;Difference of Neffhit[%]");
   gratio_3->GetYaxis()->SetRangeUser(-6.0,6.0);
-  gratio_3->GetXaxis()->SetLimits(81580,81850);
   gratio_3->SetMarkerStyle(20);
   gratio_3->SetMarkerColor(2);
   gratio_3->Draw("AP");
