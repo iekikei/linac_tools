@@ -91,60 +91,48 @@ void fit_me(TH1D *plot,float *x,float *y,float *z,int nnrun,int fflag){
   return;
 }
 
+void set_input_file (TreeManager* mgr, TString filename) {
+  TString cmd = Form("ls %s", filename.Data());
+  if (system(cmd.Data()) ){
+    exit(1);
+  };
+  mgr->SetInputFile(filename.Data());
+}
+
 void fill_hist(int flag,int nrun,double x, double y, double z, TH1D *plot[],double *count1,double *peak1, double *peak2,double *peak3){
-  char cname[400];
-  std::string fname="";
+
+  // Make tree manager
   int id = 10;
-  std::string dir="";
+  SuperManager* Smgr = SuperManager::GetManager(); 
+  Smgr->CreateTreeManager(id,"\0","\0",2);  // mode=2
+  TreeManager* mgr = Smgr->GetTreeManager(id);
 
   if(flag==0){
-    dir = "/disk01/lowe7/mharada/linac/sk5/data/";
+    set_input_file(mgr, Form("%s/lowfit/fit_data/lin.%06d.root", std::getenv("LINAC_DIR"), nrun));
   }
   else if(flag==1){
-    dir = "/disk01/lowe7/mharada/linac/sk5/detsim/lowfit/";
+    for (Int_t iData=0; iData<10; iData++) {
+      set_input_file(mgr, Form("%s/lowfit/fit_detsim/lin.%06d.%03d.root", std::getenv("LINAC_DIR"), nrun, iData));
+    }
   }
   else if(flag==2){
-    dir = "/disk01/lowe7/mharada/linac/sk5/skg4/lowfit/";
+    for (Int_t iData=0; iData<10; iData++) {
+      set_input_file(mgr, Form("%s/lowfit/fit_skg4/lin.%06d.%03d.root", std::getenv("LINAC_DIR"), nrun, iData));
+    }
   }
   else {}
   
-
-  if(flag==0){
-    sprintf(cname, "lin.%06d.corr_mod.root",nrun);
-  } else if(flag==1 || flag==2){
-    sprintf(cname, "wtf_lin.%06d.root",nrun);
-  }
-  fname = dir+cname;
-  std::ifstream FILE;
-  FILE.open(fname.c_str());
-  if(!FILE){
-    std::cout<<fname<<" does not exist."<<std::endl;
-    return;
-  } else {
-    FILE.close();
-  }
-  
-  std::cout<<"Read ROOT file = "<<fname<<std::endl;
-  
-  //
-  SuperManager* Smgr = SuperManager::GetManager(); 
-  
-  // No output file
-  Smgr->CreateTreeManager(id,"\0","\0",2);  // mode=2
-  
-  // Set input file
-  TreeManager* mgr = Smgr->GetTreeManager(id);
-  mgr->SetInputFile(fname.c_str());
-  
-  // Root initialize
+  // Initialize
   mgr->Initialize();
   
-  // obtain tree
+  // Set branch status
   TTree* tree = mgr->GetTree();
+  tree->SetBranchStatus("*", 0);
+  tree->SetBranchStatus("HEADER");
+  tree->SetBranchStatus("LOWE");
   
-  // obtain Header information
+  // Get Header information
   Header    *HEAD    = mgr->GetHEAD();
-  TQReal    *TQREAL  = mgr->GetTQREALINFO();
   LoweInfo  *LOWE    = mgr->GetLOWE();
   
   double ovaq, r_from_pipe,angle;
@@ -224,7 +212,6 @@ void fill_hist(int flag,int nrun,double x, double y, double z, TH1D *plot[],doub
 
   // close file
   Smgr->DeleteTreeManager(id);
-  std::cout<<fname<<" was closed"<<std::endl;
   // end
   SuperManager::DestroyManager();
   
@@ -370,12 +357,12 @@ int main(int argc,char *argv[]){
   gStyle->SetNdivisions(510,"Y");
   gStyle->SetStripDecimals(false);
   
-  /////// Output to eps ////
+  /////// Output to pdf ////
   TCanvas *c1 = new TCanvas("c","CANVAS",800,800);
-  char eps[400];
-  std::string EPSNAME = "";
-  sprintf(eps,"eps/linac_run%06d.eps",RUN_NUMBER);
-  EPSNAME= eps;
+  char pdf[400];
+  std::string PDFNAME = "";
+  sprintf(pdf,"pdf/linac_run%06d.pdf",RUN_NUMBER);
+  PDFNAME= pdf;
 
   c1->Divide(3,4);
   for(int i=0;i<12;i++){
@@ -431,7 +418,7 @@ int main(int argc,char *argv[]){
 
   }
   c1->Update();
-  c1->Print(EPSNAME.c_str());
+  c1->Print(PDFNAME.c_str());
 
   /////// Output to txt //////
   char outname[400];
