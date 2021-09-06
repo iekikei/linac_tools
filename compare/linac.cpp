@@ -32,7 +32,9 @@ int main(int argc,char *argv[]){
   }
   Int_t runnum = atoi(argv[1]);
 
-  //Canvas Style  
+  //************* Set styles for drawing **************//
+
+  // Canvas Style  
   gStyle->SetFrameBorderMode(0);
   gStyle->SetCanvasBorderMode(0);
   gStyle->SetPadBorderMode(0);
@@ -46,12 +48,12 @@ int main(int argc,char *argv[]){
   gStyle->SetPadBottomMargin(0.15);
   gStyle->SetEndErrorSize(2);
 
-  //Font Style
+  // Font Style
   gStyle->SetTextFont(132);
   gStyle->SetLabelFont(132,"XYZ");
   gStyle->SetTitleFont(132,"XYZ");
 
-  //Title and Label Style
+  // Title and Label Style
   gStyle->SetTitleSize(0.08,"X");
   gStyle->SetTitleSize(0.08,"Y");
   gStyle->SetLabelSize(0.075,"Y");
@@ -139,11 +141,9 @@ int main(int argc,char *argv[]){
     // Set branch status
     TTree* tree = mgr->GetTree();
     tree->SetBranchStatus("*", 0);
-    tree->SetBranchStatus("HEADER");
     tree->SetBranchStatus("LOWE");
   
-    // Get Header information
-    Header    *HEAD    = mgr->GetHEAD();
+    // Get LOWE information
     LoweInfo  *LOWE    = mgr->GetLOWE();
   
     // Loop for entries
@@ -240,8 +240,10 @@ int main(int argc,char *argv[]){
   for(Int_t iHist=0;iHist<N_HIST;iHist++){
     c1->cd(iHist+1);
 
-    if(iHist<5){
-      hist[1][iHist]->GetXaxis()->SetRangeUser(hist[1][iHist]->GetMean()-4.0*hist[1][iHist]->GetRMS(),hist[1][iHist]->GetMean()+4.0*hist[1][iHist]->GetRMS());
+    if( iHist < 5 ){
+      Float_t x_min = hist[1][iHist]->GetMean() - 4.0*hist[1][iHist]->GetRMS();
+      Float_t x_max = hist[1][iHist]->GetMean() + 4.0*hist[1][iHist]->GetRMS();
+      hist[1][iHist]->GetXaxis()->SetRangeUser(x_min, x_max);
     }
     hist[1][iHist]->SetLineColor(2); 
     hist[2][iHist]->SetLineColor(4); 
