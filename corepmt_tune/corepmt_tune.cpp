@@ -1,185 +1,40 @@
-#include <limits.h>
-#include <string>
-#include <TApplication.h>
 #include <iostream>
-#include <vector>
-#include "TFile.h"
-#include "TH1F.h"
-#include "TH1D.h"
-#include "TMath.h"
 #include <math.h>
 #include <stdio.h>
 #include <fstream>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <time.h>
-#include <TROOT.h>
+#include <sstream>
+#include <cstdlib>
+#include <numeric>
+#include <algorithm>
 #include <TLatex.h>
 #include <TLegend.h>
-#include <TBranch.h>
 #include <TCanvas.h>
-#include <TPostScript.h>
-#include <TPad.h>
 #include <TLine.h>
-#include <TMinuit.h>
-#include <TNtuple.h>
-#include <TNetFile.h>
 #include <TMultiGraph.h>
 #include <TGraphErrors.h>
-#include <TF2.h>
-#include <TH2F.h>
-#include <TSystem.h>
 #include <TStyle.h>
-#include "TTree.h"
-#include "TChain.h"
-#include <TTreeCache.h>
-#include<iostream>
-#include<fstream>
-#include<iomanip>
-#include<cmath>
-#include<sstream>
-#include <TGaxis.h>
-#include <TLatex.h>
-#include <TText.h>
-#include <TLine.h>
+#include <TAxis.h>
+#include <TH1F.h>
 
-#define N_RUN 3
+#define N_DATA 3
 
 std::string const LINAC_DIR = std::getenv("LINAC_DIR"); 
 std::string const RUNSUM_TXT = LINAC_DIR + "/runsum.dat";
 
-void read_me(int flag,int run,double *x, double *y){
-  double a=0.,b=0.,c=0.,d=0.,e=0.,f=0.,g=0.,h=0.,i=0.;
-  double j=0., k=0., l=0.,m=0., n=0., o=0.,xx=0.,yy=0.;
-  char cname[400];
-  std::string fname="";
-  int id = 10;
-  std::string dir="";
-  dir = LINAC_DIR + "/compare/txt/";
-  sprintf(cname,"linac_run%06d.dat",run);
-  //sprintf(cname,"linac2016_run%06d_tune.dat",run);
-  fname = dir+cname;
-  std::ifstream ifs;
-  ifs.open(fname.c_str());
-  if(!ifs){
-    //std::cout<<fname<<" does not exist."<<std::endl;
-    *x = -1;
-    *y = -1;
-    return;
-  }
-
-  if(flag==0){
-    ifs>>xx>>yy>>c>>d>>e>>f>>g>>h>>i>>j>>k>>l;
-  } else if(flag==1){
-    ifs>>a>>b>>c>>xx>>yy>>f>>g>>h>>i>>j>>k>>l;
-  } else if(flag==2){
-    ifs>>a>>b>>c>>d>>e>>f>>xx>>yy>>i>>j>>k>>l;
-  }
-  *x=xx;
-  *y=yy;
-  return;
-}
-
 int main(int argc,char *argv[]){
-  double index[N_RUN]={0.5,1.5,2.5};
-  int linac_run[N_RUN];
-  double a,b,c,d;
-  int const index_linac =300;
-  int A_linac_run = 0;
-  int e_mode = 0;
-  int run_mode = 0;
-  int isecond = 0;
-  char str[256];
 
   if (argc != 2) {
-    printf("Usage: ./corepmt_tune [Energy mode]");    
-  }
-  int EMode = atoi(argv[1]);
-
-  std::ifstream IN;
-  IN.open(RUNSUM_TXT.c_str());
-  if(!IN){
-    std::cout<<RUNSUM_TXT<<" does not exist."<<std::endl;
+    printf("Usage: ./corepmt_tune [Energy mode]\n");    
     return 1;
   }
+  Int_t EMode = atoi(argv[1]);
 
-  for(int i=0;i<index_linac;i++){
-    IN>>A_linac_run>>e_mode>>run_mode>>a>>b>>c>>d ;
-    if(e_mode==EMode && run_mode==0){
-      linac_run[isecond] = A_linac_run;
-      isecond++;
-    } else {
-      IN.getline(str,256);
-    }
-  }
-  IN.close();
-
-  char runnum[400];
-  sprintf(runnum,"          %d           %d           %d",linac_run[0],linac_run[1],linac_run[2]);
-
-  double zero[N_RUN]={0.5,0.5,0.5};
-
-  for(int i=0;i<N_RUN;i++){
-    //std::cout<<"linac_run="<<linac_run[i]<<std::endl;
-  }
-
-  double val[2][N_RUN]={0.0};
-  double val_err[2][N_RUN]={0.0};
-  double peak[3][N_RUN],peakerr[3][N_RUN];
-  double rave[2]={0.0},rave_err[2]={0.0},rrms[2]={0.0};
-  double p;
-  double pe;
-  float nzero = 0;
-  for(int i=0;i<N_RUN;i++){
-    for(int j=0;j<3;j++){
-      read_me(j, linac_run[i],&p, &pe);
-      
-      peak[j][i] = p;
-      peakerr[j][i] = pe;
-    }
-  }
-
-  for(int i=0;i<N_RUN;i++){
-    if ( peak[0][i] < 0.) {
-      nzero ++;
-      continue;
-    }
-    val[0][i] =peak[1][i]/peak[0][i];
-    val[1][i] =peak[2][i]/peak[0][i];
-    val_err[0][i] = sqrt((pow(peakerr[1][i],2)/pow(peak[0][i],2))+(pow(peak[1][i],2)*pow(peakerr[0][i],2)/pow(peak[0][i],4)));
-    val_err[1][i] = sqrt((pow(peakerr[2][i],2)/pow(peak[0][i],2))+(pow(peak[2][i],2)*pow(peakerr[0][i],2)/pow(peak[0][i],4)));
-    rave[0] = rave[0] + val[0][i];
-    rave[1] = rave[1] + val[1][i];
-    rave_err[0] = pow(val_err[0][i],2); 
-    rave_err[1] = pow(val_err[1][i],2); 
-  }
-
-  rave[0]  = rave[0]/(N_RUN - nzero);
-  rave[1]  = rave[1]/(N_RUN - nzero);
-
-  float nzero2 = 0.;
-  for(int i=0;i<N_RUN;i++){
-    if ( peak[0][i] < 0.) {
-      nzero2 ++;
-      continue;
-    }
-    rrms[0] = rrms[0] + pow(val[0][i]-rave[0],2);
-    rrms[1] = rrms[1] + pow(val[1][i]-rave[1],2);
-  }
-
-  rrms[0] = sqrt(rrms[0] /(N_RUN-nzero2));
-  rrms[1] = sqrt(rrms[1] /(N_RUN-nzero2));
-
-  char rrave[2][400];
-  sprintf(rrave[0],"AVE = %5.4lf  RMS = %5.4lf",rave[0],rrms[0]);
-  sprintf(rrave[1],"AVE = %5.4lf  RMS = %5.4lf",rave[1],rrms[1]);
-  
   gStyle->SetFrameBorderMode(0);
   gStyle->SetCanvasBorderMode(0);
   gStyle->SetPadBorderMode(0);
   gStyle->SetPadColor(0);
   gStyle->SetCanvasColor(0);
-  gStyle->SetOptStat(10);
+  gStyle->SetOptStat(0);
   gStyle->SetPalette(1);
   gStyle->SetStatColor(0);
   gStyle->SetFillColor(0);
@@ -192,124 +47,160 @@ int main(int argc,char *argv[]){
   gStyle->SetTitleSize(0.085,"X");
   gStyle->SetTitleSize(0.085,"Y");
   gStyle->SetLabelSize(0.07,"Y");
-  gStyle->SetLabelSize(0.01,"X");
-  gStyle->SetLabelOffset(29.,"X");
-  gStyle->SetTitleXOffset(0.7);
+  gStyle->SetLabelSize(0.09,"X");
+  gStyle->SetTitleXOffset(0.6);
   gStyle->SetTitleYOffset(1.2);
-  gStyle->SetLineWidth(4.5);
-  int Color[3] = {1,2,4};
-  
+  gStyle->SetPadTopMargin(0.02);
+  gStyle->SetPadLeftMargin(0.25);
+  gStyle->SetPadRightMargin(0.01);
+  gStyle->SetPadBottomMargin(0.15);
+
+  // Open run sumamry file
+  std::ifstream ifs_runsum(RUNSUM_TXT.c_str());
+  if(!ifs_runsum){
+    std::cout<<RUNSUM_TXT<<" does not exist."<<std::endl;
+    return 1;
+  }
+
+  // Make a list of runs from runsum file
+  Int_t linac_run, e_mode, run_mode;
+  std::string line, dummy;
+  std::vector<Int_t> list_run;
+  while (getline(ifs_runsum, line, '\n')) {
+    // Read line
+    std::stringstream ss(line);
+    ss >> linac_run >> e_mode >> run_mode;
+    if(e_mode==EMode && run_mode == 0){
+      list_run.push_back(linac_run);
+    }
+  }
+  ifs_runsum.close();
+  Int_t nRun = list_run.size();
+
+  // Create histograms
+  TH1F* h_neff[N_DATA];
+  TH1F* h_ratio[N_DATA];
+  Int_t color_data[N_DATA] = {1, 2, 4};
+  for (Int_t iData=0; iData<N_DATA; iData++) {
+    h_neff[iData] = new TH1F(Form("h_neff%d", iData), ";Run number;Neff", nRun, 0, nRun);
+    h_ratio[iData] = new TH1F(Form("h_ratio%d", iData), ";Run number;MC/Data", nRun, 0, nRun);
+    h_neff[iData]->SetLineColor(color_data[iData]);
+    h_ratio[iData]->SetLineColor(color_data[iData]);
+  }
+
+  // Arrays to store Neff data
+  Float_t neff[N_DATA];
+  Float_t neff_err[N_DATA];
+  Float_t sigma;
+
+  // Vector to store all values
+  std::vector<Float_t> v_neff;
+  std::vector<Float_t> v_ratio[N_DATA];
+
+  // Loop for runs
+  for (Int_t iRun=0; iRun<nRun; iRun++) {
+
+    // Open text file
+    Int_t run_this = list_run[iRun];
+    TString fname = Form("%s/compare/txt/linac_run%06d.dat", LINAC_DIR.c_str(), run_this);
+    ifstream ifs_data(fname.Data());
+    if(!ifs_data){
+      std::cout << fname << " does not exist." << std::endl;
+      continue;
+    }
+
+    // Loop for data
+    for (Int_t iData=0; iData<N_DATA; iData++) {
+
+      // Read text data
+      ifs_data >> neff[iData] >> neff_err[iData] >> sigma;
+
+      // Fill histograms
+      h_neff[iData]->SetBinContent(iRun+1, neff[iData]);
+      h_neff[iData]->SetBinError(iRun+1, neff_err[iData]);
+      h_neff[iData]->GetXaxis()->SetBinLabel(iRun+1, Form("%d", run_this));
+      v_neff.push_back(neff[iData]);
+      if (iData > 0) {
+        Float_t ratio = neff[iData]/neff[0];
+        Float_t ratio_err = ratio * sqrt( pow(neff_err[iData]/neff[iData], 2) + pow(neff_err[0]/neff[0], 2) );
+        h_ratio[iData]->SetBinContent(iRun+1, ratio);
+        h_ratio[iData]->SetBinError(iRun+1, ratio_err);
+        h_ratio[iData]->GetXaxis()->SetBinLabel(iRun+1, Form("%d", run_this));
+        v_ratio[iData].push_back(ratio);
+      }
+
+    } // End data loop
+
+  } // End run loop
+
+  // Draw
   TCanvas *c1 = new TCanvas("c1","c1",800,600);
-  char eps[400];
-  std::string EPSNAME = Form("eps/PositionAve_%dMeV.eps",EMode);
   c1->Divide(2,1);
-  TGraphErrors  *g[3];
-  for(int flag=0;flag<3;flag++){
-    g[flag] = new TGraphErrors(N_RUN,index,peak[flag],zero,peakerr[flag]);
-    g[flag]->SetMarkerColor(Color[flag]);
-    g[flag]->SetLineColor(Color[flag]);
+  c1->cd(1);
+  h_neff[0]->Draw("PE");
+  Float_t neff_max = *max_element(v_neff.begin(), v_neff.end());
+  Float_t neff_min = *max_element(v_neff.begin(), v_neff.end());
+  h_neff[0]->GetYaxis()->SetRangeUser(neff_min*0.95, neff_max*1.03);
+  for (Int_t iData=1; iData<N_DATA; iData++) {
+    h_neff[iData]->Draw("PE same");
   }
-  TMultiGraph *mtg = new TMultiGraph();
 
-  TGraphErrors *plot1  = new TGraphErrors(N_RUN,index,val[0],zero,val_err[0]);
-  TGraphErrors *plot2  = new TGraphErrors(N_RUN,index,val[1],zero,val_err[1]);
-
-  c1->cd(1); 
-  gPad->SetLeftMargin(0.25);
-  gPad->SetRightMargin(0.01);
-  gPad->SetBottomMargin(0.15);
-  gPad->SetTopMargin(0.02);
-  for(int flag=0;flag<3;flag++){
-    mtg->Add(g[flag]);
-  }
-  mtg->SetTitle(";Run number;# of Nhit");
-  mtg->Draw("AP");
-  //mtg->SetMaximum(70.);
-  //mtg->SetMinimum(60.);
-  mtg->SetMaximum(peak[0][5]+5);
-  mtg->SetMinimum(peak[0][5]-5);
-  mtg->GetXaxis()->SetLimits(0.,N_RUN);
-  
-  TText *tlabel = new TText(0.20,0.10,runnum);
-  tlabel->Draw();
-  tlabel->SetNDC(1);
-
+  // Draw legend
+  TString str_data[N_DATA] = {"DATA", "DETSIM", "SKG4"};
   TLegend *leg = new TLegend(0.7,0.7,0.85,0.85);
-  leg->SetTextSize(0.045);
-  std::string te[3];
-  te[0] = "DATA";
-  te[1] = "DETSIM";
-  te[2] = "SKG4";
-
-  leg->AddEntry(g[0],te[0].c_str(),"l");
-  leg->AddEntry(g[1],te[1].c_str(),"l");
-  leg->AddEntry(g[2],te[2].c_str(),"l");
+  for (Int_t iData=0; iData<N_DATA; iData++) {
+    leg->AddEntry(h_neff[iData], str_data[iData], "l");
+  }
   leg->SetTextSize(0.04);
   leg->SetBorderSize(0);
-  leg->SetFillColor(0);
+  leg->SetFillStyle(0);
   leg->Draw();
 
   c1->cd(2); 
-  gPad->SetLeftMargin(0.25);
-  gPad->SetRightMargin(0.01);
-  gPad->SetBottomMargin(0.15);
-  gPad->SetTopMargin(0.02);
-  plot1->SetLineColor(Color[1]);
-  plot2->SetLineColor(Color[2]);
-  plot1->Draw("AP");
-  plot1->SetMaximum(1.03);
-  plot1->SetMinimum(0.97);
-  plot1->SetTitle(";Run number;MC/DATA");
-  plot1->GetXaxis()->SetLimits(0.,N_RUN);
-  plot2->Draw("P");
+  h_ratio[1]->Draw("PE");
+  h_ratio[1]->SetMaximum(1.03);
+  h_ratio[1]->SetMinimum(0.97);
+  h_ratio[2]->Draw("PE same");
 
+  TLatex* latex = new TLatex();
+  latex->SetTextSize(0.1);
+  latex->DrawTextNDC(0.6, 0.85, Form("%d MeV", EMode));
+  latex->SetTextSize(0.05);
 
-  TText *t = new TText(0.6,0.85,Form("%dMeV",EMode));
-  t->SetTextSize(0.15);
-  t->Draw();
-  t->SetNDC(1);
+  // Open output file
+  std::ofstream ofs("corepmt.dat", std::ios::app);
+  ofs << EMode;
 
-  TText *tlabel2 = new TText(0.20,0.10,runnum);
-  tlabel2->Draw();
-  tlabel2->SetNDC(1);
-  
-  TText *t3 = new TText(0.35,0.35,rrave[0]);
-  t3->SetTextSize(0.05);
-  t3->SetTextColor(Color[1]);
-  t3->Draw();
-  t3->SetNDC(1);
-  TText *t4 = new TText(0.35,0.30,rrave[1]);
-  t4->SetTextSize(0.05);
-  t4->SetTextColor(Color[2]);
-  t4->Draw();
-  t4->SetNDC(1);
+  // Calculate and draw mean and RMS
+  for (Int_t iData=1; iData<N_DATA; iData++) {
+    Float_t ratio_sum = std::accumulate(v_ratio[iData].begin(), v_ratio[iData].end(), 0.0);
+    Float_t ratio_mean = ratio_sum / v_ratio[iData].size();
 
-  TLine *z1 = new TLine(0,1,N_RUN,1);
-  z1 ->SetLineColor(1);
-  z1 ->SetLineStyle(1);
-  z1 ->SetLineWidth(3);
-  z1 ->Draw();
-  TLine *z2 = new TLine(0,1.01,N_RUN,1.01);
-  z2 ->SetLineColor(1);
-  z2 ->SetLineWidth(2);
-  z2 ->SetLineStyle(2);
-  z2 ->Draw();
-  TLine *z3 = new TLine(0,0.99,N_RUN,0.99);
-  z3 ->SetLineColor(1);
-  z3 ->SetLineStyle(2);
-  z3 ->SetLineWidth(2);
-  z3 ->Draw();
+    Float_t ratio_sq_sum = std::inner_product(v_ratio[iData].begin(), v_ratio[iData].end(), v_ratio[iData].begin(), 0.0);
+    Float_t ratio_rms = sqrt(ratio_sq_sum / v_ratio[iData].size() - ratio_mean * ratio_mean);  
 
+    latex->SetTextColor(color_data[iData]);
+    latex->DrawTextNDC(0.35, 0.35-0.05*iData, Form("AVE = %5.4lf  RMS = %5.4lf", ratio_mean, ratio_rms));
+    printf("AVE (%s)\t\t:=  %5.4lf  RMS = %5.4lf\n", str_data[iData].Data(), ratio_mean, ratio_rms);
+    ofs << ratio_mean << " " << ratio_rms;
+  }
+
+  ofs.close();
+
+  // Draw lines
+  TLine* lin = new TLine();
+  lin->SetLineColor(1);
+  lin->SetLineWidth(3);
+  lin->DrawLine(0., 1.00, nRun, 1.00);
+  lin->SetLineStyle(2);
+  lin->SetLineWidth(2);
+  lin->DrawLine(0., 1.01, nRun, 1.01);
+  lin->DrawLine(0., 0.99, nRun, 0.99);
+
+  // Output PDF
   c1->Update();
-  c1->Print(EPSNAME.c_str());
-  
-  //  thaeApp.Run();
-  std::cout <<" nzero := "<<nzero<<"  "<<nzero2<<std::endl;
-  std::cout<< " AVE (DETSIM)        :=  "<<rave[0]<<" ,   "<<rrave[0]<<std::endl;
-  std::cout<< " AVE (SKG4)          :=  "<<rave[1]<<" ,   "<<rrave[1]<<std::endl;
-  std::cout<< " RATIO (DETSIM/SKG4) :=  "<<rave[0]/rave[1]<<" ,   "<<rrave[1]<<std::endl;
+  c1->Print(Form("Neff_%dMeV.pdf", EMode));
 
-  std::ofstream ofs("corepmt.dat",std::ios::app);
-  ofs<<EMode<<" "<<rave[0]<<" "<<rrms[0]<<" "<<rave[1]<<" "<<rrms[1]<<std::endl;
   return 1;
+
 }
