@@ -158,11 +158,11 @@
 #                                                     ====#
 #=========================================================#
 
-#/SKG4/DarkNoise/Mode 2
-#/SKG4/DarkNoise/Run RUNNUM
+/SKG4/DarkNoise/Mode 2
+/SKG4/DarkNoise/Run RUNNUM
 
-/SKG4/DarkNoise/Mode 1
-/SKG4/DarkNoise/ConstValue 6
+#/SKG4/DarkNoise/Mode 1
+#/SKG4/DarkNoise/ConstValue 6
 
 
 #=========================================================#
