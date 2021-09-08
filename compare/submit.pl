@@ -42,7 +42,7 @@ foreach $list (@raw_data){
     print SCRIPT "source $ENV{LINAC_DIR}/setup.csh\n";
     print SCRIPT "cd $ENV{LINAC_DIR}/compare/\n";
     print SCRIPT "hostname\n";
-    print SCRIPT "./linac $RunNumber\n";
+    print SCRIPT "./compare $RunNumber\n";
     close SCRIPT;
     $cmd = "chmod 755 $files";
     system $cmd;
