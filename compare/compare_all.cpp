@@ -14,6 +14,7 @@
 #include <TGraphErrors.h>
 #include <TMultiGraph.h>
 #include <TStyle.h>
+#include <TMath.h>
 
 #define N_DATA 3
 
@@ -25,11 +26,10 @@ Int_t main(const int argc,char *argv[]){
   // Canvas Style
   gStyle->SetFrameBorderMode(0);
   gStyle->SetCanvasBorderMode(0);
-  gStyle->SetPadBorderMode(0);
-  gStyle->SetPadColor(0);
-  gStyle->SetCanvasColor(0);
+  gStyle->SetPadColor(kWhite);
+  gStyle->SetCanvasColor(kWhite);
+  gStyle->SetFillColor(kWhite);
   gStyle->SetOptStat(0);
-  gStyle->SetFillColor(0);
   gStyle->SetPadGridX(1);
   gStyle->SetPadGridY(1);
 
@@ -41,12 +41,47 @@ Int_t main(const int argc,char *argv[]){
   //Title and Label Style
   gStyle->SetTitleSize(0.09,"XY");
   gStyle->SetLabelSize(0.07,"XY");
-  gStyle->SetTitleXOffset(0.5);
-  gStyle->SetTitleYOffset(1.0);
   gStyle->SetNdivisions(505,"X");
   gStyle->SetNdivisions(510,"Y");
-  gStyle->SetStripDecimals(false);
   gStyle->SetLegendBorderSize(0);
+  gStyle->SetMarkerStyle(20);
+  gStyle->SetTitleXOffset(0.8);
+  gStyle->SetTitleYOffset(0.4);
+  gStyle->SetPadTopMargin(0.09);
+  gStyle->SetPadLeftMargin(0.08);
+  gStyle->SetPadRightMargin(0.02);
+  gStyle->SetPadBottomMargin(0.15);
+
+  // Make graphs
+  TGraphErrors* gr_neff[N_DATA]; // Neff vs. run number
+  TGraphErrors* gr_diff[N_DATA]; // Neff Data-MC diff vs. run number. First graph in the array will not be used.
+  TGraphErrors* gr_neff_sel[N_DATA]; // Neff vs. run number for selected runs
+  TGraphErrors* gr_ratio_sel[N_DATA]; // Neff MC/Data ratio vs. run number for selected runs
+  TMultiGraph* mgr_neff = new TMultiGraph();
+  TMultiGraph* mgr_diff = new TMultiGraph();
+  TMultiGraph* mgr_neff_sel = new TMultiGraph();
+  TMultiGraph* mgr_ratio_sel = new TMultiGraph();
+  Int_t color_data[N_DATA] = {kBlack, kRed, kBlue};
+  for (Int_t iData=0; iData<N_DATA; iData++) {
+    gr_neff[iData] = new TGraphErrors();
+    gr_diff[iData] = new TGraphErrors();
+    gr_neff_sel[iData] = new TGraphErrors();
+    gr_ratio_sel[iData] = new TGraphErrors();
+    mgr_neff->Add(gr_neff[iData]);
+    mgr_neff_sel->Add(gr_neff_sel[iData]);
+    if (iData > 0) {
+      mgr_diff->Add(gr_diff[iData]);
+      mgr_ratio_sel->Add(gr_ratio_sel[iData]);
+    }
+    gr_neff[iData]->SetMarkerColor(color_data[iData]);
+    gr_diff[iData]->SetMarkerColor(color_data[iData]);
+    gr_neff_sel[iData]->SetMarkerColor(color_data[iData]);
+    gr_ratio_sel[iData]->SetMarkerColor(color_data[iData]);
+    gr_neff[iData]->SetLineColor(color_data[iData]);
+    gr_diff[iData]->SetLineColor(color_data[iData]);
+    gr_neff_sel[iData]->SetLineColor(color_data[iData]);
+    gr_ratio_sel[iData]->SetLineColor(color_data[iData]);
+  }
 
   // Open run sumamry file
   std::ifstream ifs_runsum(LINAC_TXT.c_str());
@@ -55,70 +90,22 @@ Int_t main(const int argc,char *argv[]){
     return 1;
   }
 
-  // Make a list of runs from runsum file
-  Int_t linac_run, run_mode, e_mode;
-  std::string line, dummy;
-  std::vector<Int_t> list_run;
+  // Loop for runs in run summary file
+  std::string line;
   std::vector<Int_t> list_sel;
-  Int_t nRun_sel = 0;
   while (getline(ifs_runsum, line, '\n')) {
+
     // Read line
     std::stringstream ss(line);
-    ss >> linac_run >> e_mode >> run_mode;
-    if(run_mode == 0){
-      list_run.push_back(linac_run);
-      if (true) {
-      // if (e_mode == 8) {
-        list_sel.push_back(1);
-        nRun_sel++;
-      } else {
-        list_sel.push_back(0);
-      }
+    Int_t run_this, e_mode, run_mode;
+    ss >> run_this >> e_mode >> run_mode;
+
+    // Skip RF run
+    if(run_mode != 0){
+      continue;
     }
-  }
-  ifs_runsum.close();
-
-  // Make graphs
-  TGraphErrors* gr_neff[N_DATA]; // Neff vs. run number
-  TGraphErrors* gr_diff[N_DATA]; // Neff Data-MC diff vs. run number. First graph in the array will not be used.
-  TMultiGraph* mgr_neff = new TMultiGraph();
-  TMultiGraph* mgr_diff = new TMultiGraph();
-  for (Int_t iData=0; iData<N_DATA; iData++) {
-    gr_neff[iData] = new TGraphErrors();
-    gr_diff[iData] = new TGraphErrors();
-    mgr_neff->Add(gr_neff[iData]);
-    if (iData > 0) {
-      mgr_diff->Add(gr_diff[iData]);
-    }
-    gr_neff[iData]->SetMarkerStyle(20);
-    gr_diff[iData]->SetMarkerStyle(20);
-  }
-
-  // Make histograms
-  TH1F* h_neff[N_DATA];
-  TH1F* h_ratio[N_DATA];
-  Int_t color_data[N_DATA] = {1, 2, 4};
-  for (Int_t iData=0; iData<N_DATA; iData++) {
-    h_neff[iData] = new TH1F(Form("h_neff%d", iData), ";Run number;Neff", nRun_sel, 0, nRun_sel);
-    h_ratio[iData] = new TH1F(Form("h_ratio%d", iData), ";Run number;MC/Data", nRun_sel, 0, nRun_sel);
-    h_neff[iData]->SetLineColor(color_data[iData]);
-    h_ratio[iData]->SetLineColor(color_data[iData]);
-  }
-
-  // Arrays to store Neff data
-  Float_t neff[N_DATA];
-  Float_t neff_err[N_DATA];
-  Float_t sigma;
-
-  // Vector to store all values
-  std::vector<Float_t> v_neff;
-  std::vector<Float_t> v_ratio[N_DATA];
-
-  // Loop for runs
-  for (UInt_t iRun=0; iRun<list_run.size(); iRun++) {
 
     // Open text file for this run
-    Int_t run_this = list_run[iRun];
     TString filename = Form("%s/compare/txt/linac_run%06d.dat", LINAC_DIR.c_str(), run_this);
     std::ifstream ifs_data(filename.Data());
     if(!ifs_data){
@@ -127,10 +114,15 @@ Int_t main(const int argc,char *argv[]){
     }
 
     // Read text file
+    Float_t neff[N_DATA];
+    Float_t neff_err[N_DATA];
+    Float_t sigma;
     for (Int_t iData=0; iData<N_DATA; iData++) {
-
-      // Read values
       ifs_data >> neff[iData] >> neff_err[iData] >> sigma;
+    }
+
+    // Loop for data types (Data, Detsim, SKG4 ...)
+    for (Int_t iData=0; iData<N_DATA; iData++) {
 
       // Set points to graphs
       gr_neff[iData]->SetPoint(gr_neff[iData]->GetN(), run_this+iData, neff[iData]);
@@ -142,48 +134,41 @@ Int_t main(const int argc,char *argv[]){
         gr_diff[iData]->SetPointError(gr_diff[iData]->GetN()-1, 0., diff_err);
       }
 
-      // Fill histograms for selected runs
-      if (list_sel[iRun]) {
-        Int_t bin_this = h_neff[iData]->GetEntries();
-        h_neff[iData]->SetBinContent(bin_this+1, neff[iData]);
-        h_neff[iData]->SetBinError(bin_this+1, neff_err[iData]);
-        h_neff[iData]->GetXaxis()->SetBinLabel(bin_this+1, Form("%d", run_this));
-        v_neff.push_back(neff[iData]);
-        if (iData > 0) {
+      // Set points to graphs for selected runs
+      if (true) {
+      // if (e_mode == 8) {
+        if (iData==0) {
+          list_sel.push_back(run_this);
+        }
+        gr_neff_sel[iData]->SetPoint(gr_neff_sel[iData]->GetN(), gr_neff_sel[iData]->GetN()+0.2*iData, neff[iData]);
+        gr_neff_sel[iData]->SetPointError(gr_neff_sel[iData]->GetN()-1, 0., neff_err[iData]);
+        if (iData > 0 && neff[0] > 0.) {  // For MC
           Float_t ratio = neff[iData]/neff[0];
           Float_t ratio_err = ratio * sqrt( pow(neff_err[iData]/neff[iData], 2) + pow(neff_err[0]/neff[0], 2) );
-          h_ratio[iData]->SetBinContent(bin_this+1, ratio);
-          h_ratio[iData]->SetBinError(bin_this+1, ratio_err);
-          h_ratio[iData]->GetXaxis()->SetBinLabel(bin_this+1, Form("%d", run_this));
-          v_ratio[iData].push_back(ratio);
+          gr_ratio_sel[iData]->SetPoint(gr_ratio_sel[iData]->GetN(), gr_ratio_sel[iData]->GetN()+0.2*(iData-1), ratio);
+          gr_ratio_sel[iData]->SetPointError(gr_ratio_sel[iData]->GetN()-1, 0., ratio_err);
         }
-      }
+      } 
 
-    }
-    ifs_data.close();
+    } // End data loop
 
-  }
+  } // End run loop
+  ifs_runsum.close();
 
   // Make canvases
-  gStyle->SetPadTopMargin(0.09);
-  gStyle->SetPadLeftMargin(0.08);
-  gStyle->SetPadRightMargin(0.02);
-  gStyle->SetPadBottomMargin(0.15);
   TCanvas *c1 = new TCanvas("c1","c1",700,500);
-  TCanvas *c2 = new TCanvas("c2","c2",800,600);
+  TCanvas *c2 = new TCanvas("c2","c2",700,500);
   c1->Divide(1,2);
-  gStyle->SetPadLeftMargin(0.18);
-  c2->Divide(2,1);
+  c2->Divide(1,2);
 
   // Draw Neff vs runnum
   c1->cd(1);
-  gr_neff[1]->SetMarkerColor(2);
-  gr_neff[2]->SetMarkerColor(4);
-  mgr_neff->SetTitle(";Runnumber;Neffhit");
+  mgr_neff->SetTitle(";Run number;Neff");
   mgr_neff->Draw("APE");
 
   // Add legend
   TLegend *leg1 = new TLegend(0.1,0.6,0.2,0.8);
+  leg1->SetFillStyle(0);
   TString str_data[N_DATA] = {"DATA", "DETSIM", "SKG4"};
   for (Int_t iData=0; iData<N_DATA; iData++) {
     leg1->AddEntry(gr_neff[iData], str_data[iData], "lp");
@@ -192,82 +177,82 @@ Int_t main(const int argc,char *argv[]){
 
   // Draw Neff diff vs. runnum
   c1->cd(2);
-  gr_diff[1]->SetMarkerColor(2);
-  gr_diff[2]->SetMarkerColor(4);
-  mgr_diff->SetTitle(";Runnumber;Difference of Neffhit[%]");
+  mgr_diff->SetTitle(";Run number;(MC-Data)/MC*100");
   mgr_diff->Draw("APE");
-  gStyle->SetTitleXOffset(0.8);
-  gStyle->SetTitleYOffset(0.4);
   mgr_diff->GetYaxis()->SetRangeUser(-6.0,6.0);
-
-  // Add legend
-  TLatex *latex = new TLatex();
-  latex->SetTextSize(0.05);
-  latex->DrawTextNDC(0.15, 0.93, "*Difference of Neffhit = (MC-DATA)/DATA [%]");
-
-  // Save as PDF
-  c1->Update();
-  c1->Print("compare_all.pdf(");
 
   // Draw Neff for selected runs
   c2->cd(1);
-  h_neff[0]->Draw("E");
-  Float_t neff_max = *max_element(v_neff.begin(), v_neff.end());
-  Float_t neff_min = *min_element(v_neff.begin(), v_neff.end());
-  h_neff[0]->GetYaxis()->SetRangeUser(neff_min*0.95, neff_max*1.03);
-  for (Int_t iData=1; iData<N_DATA; iData++) {
-    h_neff[iData]->Draw("E same");
-  }
+  mgr_neff_sel->Draw("APE");
+  mgr_neff_sel->SetTitle(";Run number;Neff");
+
+  // Add legend
   TLegend *leg2 = new TLegend(0.65,0.7,0.95,0.85);
+  leg2->SetFillStyle(0);
   for (Int_t iData=0; iData<N_DATA; iData++) {
-    leg2->AddEntry(h_neff[iData], str_data[iData], "l");
+    leg2->AddEntry(gr_neff_sel[iData], str_data[iData], "lp");
   }
   leg2->Draw();
 
   // Draw Neff ratio for selected runs
   c2->cd(2); 
-  h_ratio[1]->Draw("E");
-  h_ratio[1]->SetMaximum(1.03);
-  h_ratio[1]->SetMinimum(0.97);
-  h_ratio[2]->Draw("E same");
+  mgr_ratio_sel->SetTitle(";Run number;MC/Data");
+  mgr_ratio_sel->Draw("APE");
+
+  // Set X axis labels
+  for (UInt_t iRun=0; iRun<list_sel.size(); iRun++) {
+    Int_t bin_neff = mgr_neff_sel->GetXaxis()->FindBin(iRun);
+    mgr_neff_sel->GetXaxis()->SetBinLabel(bin_neff, Form("%d", list_sel[iRun]));
+    Int_t bin_ratio = mgr_ratio_sel->GetXaxis()->FindBin(iRun);
+    mgr_ratio_sel->GetXaxis()->SetBinLabel(bin_ratio, Form("%d", list_sel[iRun]));
+  }
+  mgr_neff_sel->GetXaxis()->LabelsOption("h");
+  mgr_ratio_sel->GetXaxis()->LabelsOption("h");
+
+  // Draw lines in the ratio graph
+  TLine* lin = new TLine();
+  lin->SetLineColor(1);
+  lin->SetLineWidth(3);
+  Float_t xmin_graph = mgr_ratio_sel->GetXaxis()->GetXmin();
+  Float_t xmax_graph = mgr_ratio_sel->GetXaxis()->GetXmax();
+  lin->DrawLine(xmin_graph, 1.00, xmax_graph, 1.00);
+  lin->SetLineStyle(2);
+  lin->SetLineWidth(2);
+  lin->DrawLine(xmin_graph, 1.01, xmax_graph, 1.01);
+  lin->DrawLine(xmin_graph, 0.99, xmax_graph, 0.99);
 
   // Open output file
   std::ofstream ofs("corepmt.dat", std::ios::app);
+
+  // Legend to draw mean and RMS
+  TLatex *latex = new TLatex();
+  latex->SetTextSize(0.04);
 
   // Calculate and draw mean and RMS
   for (Int_t iData=1; iData<N_DATA; iData++) {
 
     // Calculate mean and RMS
-    Float_t ratio_sum = std::accumulate(v_ratio[iData].begin(), v_ratio[iData].end(), 0.0);
-    Float_t ratio_mean = ratio_sum / v_ratio[iData].size();
-    Float_t ratio_sq_sum = std::inner_product(v_ratio[iData].begin(), v_ratio[iData].end(), v_ratio[iData].begin(), 0.0);
-    Float_t ratio_rms = sqrt(ratio_sq_sum / v_ratio[iData].size() - ratio_mean * ratio_mean);  
+    Float_t ratio_mean = TMath::Mean(gr_ratio_sel[iData]->GetN(), gr_ratio_sel[iData]->GetY());
+    Float_t ratio_rms = TMath::RMS(gr_ratio_sel[iData]->GetN(), gr_ratio_sel[iData]->GetY());
 
     // Draw
-    latex->SetTextSize(0.04);
     latex->SetTextColor(color_data[iData]);
-    latex->DrawTextNDC(0.30, 0.35-0.05*iData, Form("%s AVE = %5.4lf  RMS = %5.4lf", str_data[iData].Data(), ratio_mean, ratio_rms));
+    latex->DrawTextNDC(0.75, 0.80-0.05*iData, Form("%s Mean = %5.4lf  RMS = %5.4lf", str_data[iData].Data(), ratio_mean, ratio_rms));
 
     // Write
-    printf("AVE (%s)\t\t:=  %5.4lf  RMS = %5.4lf\n", str_data[iData].Data(), ratio_mean, ratio_rms);
-    ofs << ratio_mean << " " << ratio_rms;
+    printf("%s Mean \t\t:=  %5.4lf  RMS = %5.4lf\n", str_data[iData].Data(), ratio_mean, ratio_rms);
+    ofs << ratio_mean << " " << ratio_rms << " ";
   }
 
+  ofs << std::endl;
   ofs.close();
 
-  // Draw lines
-  TLine* lin = new TLine();
-  lin->SetLineColor(1);
-  lin->SetLineWidth(3);
-  lin->DrawLine(0., 1.00, nRun_sel, 1.00);
-  lin->SetLineStyle(2);
-  lin->SetLineWidth(2);
-  lin->DrawLine(0., 1.01, nRun_sel, 1.01);
-  lin->DrawLine(0., 0.99, nRun_sel, 0.99);
-
-  // Output PDF
+  // Save as PDF
+  c1->Update();
+  c1->Print("compare_all.pdf(");
   c2->Update();
   c2->Print("compare_all.pdf)");
 
   return 1; 
+
 }
