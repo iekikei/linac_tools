@@ -40,7 +40,7 @@ c*** number of hit limit for clusfit
       integer log_level,iskip
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c*** set SK_GEOMETRY
-      SK_GEOMETRY = 5
+      SK_GEOMETRY = 6
 
       narg = iargc()
       print *, narg
@@ -106,7 +106,8 @@ c*** read an event
       if(mod(nevsk,1000).eq.0) write(6,*) nrunsk,nevsk,nqisk
       call lfclear_all()
 c      call lfallfit_sk4_mc(watert,NHITCUT,lfflag)
-      call lfallfit_sk4_mc(watert,NHITCUT,iskip,log_level,lfflag) 
+c      call lfallfit_sk4_mc(watert,NHITCUT,iskip,log_level,lfflag) 
+      call lfallfit_sk4_final_qe41_mc(watert,NHITCUT,iskip,log_level,lfflag) 
 c      call lfallfit_sk4_gain_corr_mc(watert,NHITCUT,iskip,log_level,lfflag) 
 c      if(mod(nevsk,100).eq.0) write(6,*) nrunsk,nevsk,nqisk,bsvertex(1),bsenergy,bsn50
 c      if(nevsk.eq.100)  goto 9999

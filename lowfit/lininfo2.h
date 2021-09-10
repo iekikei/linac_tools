@@ -7,7 +7,7 @@ C       2009/10/7 increase lin_num to 80000 for SK-IV  by M. Nakahata
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 	integer lin_num
-	parameter(lin_num=90000)
+	parameter(lin_num=150000)
 	integer lin_mode(lin_num),lin_trg(lin_num)
 	real lin_x(lin_num),lin_y(lin_num),lin_z(lin_num)
 	integer lin_badrun(lin_num)

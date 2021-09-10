@@ -99,7 +99,7 @@ c*** initilalize skroot files
       call skroot_init(lun)
 
 c*** set SK_GEOMETRY
-      SK_GEOMETRY = 5
+      SK_GEOMETRY = 6
 
 c*** init.
       call kzinit
