@@ -249,9 +249,9 @@ Int_t main(const int argc,char *argv[]){
 
   // Save as PDF
   c1->Update();
-  c1->Print("compare_all.pdf(");
+  c1->Print("./pdf/compare_all.pdf(");
   c2->Update();
-  c2->Print("compare_all.pdf)");
+  c2->Print("./pdf/compare_all.pdf)");
 
   return 1; 
 
